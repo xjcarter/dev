@@ -1,5 +1,6 @@
 from indicator_sets import Test_Indicator_Set
-from bar_aggregator import BarAggregator, Bar, _default_volume_fn, get_filtered_filenames 
+# from bar_aggregator import BarAggregator, Bar, _default_volume_fn, get_filtered_filenames 
+from bar_aggregator import BarAggregator, get_filtered_filenames 
 import os
 
 DATA_DIR = "/Users/jcarter/hannibal/dev/nvda_samples"
