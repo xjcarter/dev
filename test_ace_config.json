@@ -1,0 +1,32 @@
+[
+    {
+        "strategy": "lex2",
+        "accounts": [
+            {
+                "account": "DU9085813",
+                "allocType": "fixedEquity",
+                "allocValue": 7500 
+            },
+            {
+                "account": "DU9085814",
+                "allocType": "pctEquity",
+                "allocValue": 0.5 
+            },
+            {
+                "account": "DU9085815",
+                "allocType": "fixedEquity",
+                "allocValue": 1200 
+            },
+            {
+                "account": "DU9085816",
+                "allocType": "pctEquity",
+                "allocValue": 1.5 
+            },
+            {
+                "account": "DU9085817",
+                "allocType": "fixedEquity",
+                "allocValue": 20000 
+            }
+        ]
+    }
+]

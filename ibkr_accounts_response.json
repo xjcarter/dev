@@ -1,0 +1,653 @@
+{
+    "accounts": [
+        "All",
+        "DU9085813",
+        "DU9085814",
+        "DU9085815",
+        "DU9085816",
+        "DU9085817",
+        "UPRO_BUY_785_61228752_093001",
+        "FA_CANCEL_TEST_094516_1",
+        "UPRO_BUY_4245_61228752_113000",
+        "UPRO_BUY_10098_61228752_103500",
+        "UPRO_BUY_9357_61228752_093502",
+        "UPRO_BUY_4275_61228752_152501",
+        "UPRO_BUY_8628_None_151950",
+        "FA_CANCEL_TEST_094516_0",
+        "FA_08cb283c-43ac-11ef-803d-11b752597d08",
+        "UPRO_BUY_75880_61228752_104002",
+        "UPRO_BUY_503_61228752_123505",
+        "UPRO_SELL_4212_61228752_130021",
+        "UPRO_BUY_3990_61228752_093001",
+        "UPRO_BUY_713.0_61228752_102501",
+        "UPRO_BUY_4250_61228752_152001",
+        "UPRO_BUY_3717_61228752_133502",
+        "UPRO_BUY_9752_61228752_133002",
+        "UPRO_BUY_8622_None_155935",
+        "UPRO_BUY_4357_61228752_103003",
+        "UPRO_BUY_9985_61228752_105502",
+        "UPRO_SELL_44515_61228752_104500",
+        "UPRO_BUY_511_None_093002",
+        "UPRO_BUY_8903_61228752_102501",
+        "UPRO_SELL_9752_61228752_135002",
+        "UPRO_BUY_13981_61228752_094002",
+        "UPRO_SELL_13981_61228752_101003",
+        "UPRO_BUY_505_61228752_120237",
+        "UPRO_BUY_713_61228752_101702",
+        "UPRO_BUY_3720_61228752_151000",
+        "UPRO_SELL_3523_None_155800",
+        "UPRO_BUY_4211_61228752_103002",
+        "UPRO_BUY_508_None_111225",
+        "UPRO_SELL_4285_61228752_111000",
+        "FA_348a2fee-444d-11ef-803d-11b752597d08",
+        "UPRO_BUY_504_61228752_123827",
+        "UPRO_BUY_714_61228752_094932",
+        "UPRO_BUY_4222_61228752_105135",
+        "UPRO_BUY_4264_61228752_155300",
+        "UPRO_BUY_72617_61228752_094017",
+        "UPRO_BUY_4285_61228752_105000",
+        "UPRO_BUY_3794_61228752_102001",
+        "UPRO_BUY_4220_61228752_150000",
+        "UPRO_SELL_4185_61228752_134000",
+        "GROUP1",
+        "UPRO_BUY_14388_61228752_103002",
+        "FA_17c43d7c-444e-11ef-803d-11b752597d08",
+        "UPRO_BUY_4212_61228752_135002",
+        "UPRO_BUY_718_61228752_100020",
+        "UPRO_BUY_503_61228752_122511",
+        "UPRO_BUY_4195_61228752_122001",
+        "UPRO_SELL_14388_61228752_120002",
+        "UPRO_BUY_503_61228752_122911",
+        "FA_ccc8b4ce-444d-11ef-803d-11b752597d08",
+        "UPRO_BUY_9757_61228752_123002",
+        "FA_CANCEL_TEST",
+        "UPRO_BUY_14056_61228752_101702",
+        "UPRO_BUY_3738_61228752_140501",
+        "UPRO_BUY_4185_61228752_132000",
+        "UPRO_BUY_9822_61228752_135502",
+        "UPRO_SELL_9985_61228752_111501",
+        "UPRO_SELL_18970_61228752_104000"
+    ],
+    "acctProps": {
+        "All": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_3738_61228752_140501": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_504_61228752_123827": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_8903_61228752_102501": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "FA_CANCEL_TEST": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "FA_ccc8b4ce-444d-11ef-803d-11b752597d08": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_4185_61228752_132000": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "DU9085817": {
+            "hasChildAccounts": false,
+            "supportsCashQty": true,
+            "liteUnderPro": false,
+            "noFXConv": true,
+            "isProp": false,
+            "supportsFractions": true,
+            "allowCustomerTime": false,
+            "autoFx": false
+        },
+        "DU9085816": {
+            "hasChildAccounts": false,
+            "supportsCashQty": true,
+            "liteUnderPro": false,
+            "noFXConv": true,
+            "isProp": false,
+            "supportsFractions": true,
+            "allowCustomerTime": false,
+            "autoFx": false
+        },
+        "UPRO_BUY_3990_61228752_093001": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_503_61228752_122911": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_508_None_111225": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_75880_61228752_104002": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_SELL_4285_61228752_111000": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_785_61228752_093001": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "DU9085815": {
+            "hasChildAccounts": false,
+            "supportsCashQty": true,
+            "liteUnderPro": false,
+            "noFXConv": true,
+            "isProp": false,
+            "supportsFractions": true,
+            "allowCustomerTime": false,
+            "autoFx": false
+        },
+        "UPRO_BUY_503_61228752_122511": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "DU9085814": {
+            "hasChildAccounts": false,
+            "supportsCashQty": true,
+            "liteUnderPro": false,
+            "noFXConv": true,
+            "isProp": false,
+            "supportsFractions": true,
+            "allowCustomerTime": false,
+            "autoFx": false
+        },
+        "DU9085813": {
+            "hasChildAccounts": false,
+            "supportsCashQty": true,
+            "liteUnderPro": false,
+            "noFXConv": true,
+            "isProp": false,
+            "supportsFractions": true,
+            "allowCustomerTime": false,
+            "autoFx": false
+        },
+        "FA_17c43d7c-444e-11ef-803d-11b752597d08": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_SELL_9985_61228752_111501": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "FA_CANCEL_TEST_094516_1": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "FA_CANCEL_TEST_094516_0": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_511_None_093002": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_9985_61228752_105502": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_4250_61228752_152001": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_8622_None_155935": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_SELL_13981_61228752_101003": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_4275_61228752_152501": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_4211_61228752_103002": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_9757_61228752_123002": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_718_61228752_100020": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "FA_348a2fee-444d-11ef-803d-11b752597d08": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_SELL_4212_61228752_130021": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_4195_61228752_122001": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_SELL_14388_61228752_120002": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_3717_61228752_133502": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_14056_61228752_101702": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_4212_61228752_135002": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_9822_61228752_135502": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_SELL_18970_61228752_104000": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_3720_61228752_151000": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_14388_61228752_103002": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_714_61228752_094932": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_713_61228752_101702": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_SELL_9752_61228752_135002": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "FA_08cb283c-43ac-11ef-803d-11b752597d08": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_SELL_44515_61228752_104500": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_4285_61228752_105000": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_13981_61228752_094002": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_503_61228752_123505": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_713.0_61228752_102501": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_8628_None_151950": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_9357_61228752_093502": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_4357_61228752_103003": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_4220_61228752_150000": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_4264_61228752_155300": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_3794_61228752_102001": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_10098_61228752_103500": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_4222_61228752_105135": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "GROUP1": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_9752_61228752_133002": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_SELL_3523_None_155800": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_505_61228752_120237": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_SELL_4185_61228752_134000": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_72617_61228752_094017": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        },
+        "UPRO_BUY_4245_61228752_113000": {
+            "hasChildAccounts": false,
+            "supportsCashQty": false,
+            "supportsFractions": false
+        }
+    },
+    "aliases": {
+        "All": "All",
+        "UPRO_BUY_3738_61228752_140501": "UPRO_BUY_3738_61228752_140501",
+        "UPRO_BUY_504_61228752_123827": "UPRO_BUY_504_61228752_123827",
+        "UPRO_BUY_8903_61228752_102501": "UPRO_BUY_8903_61228752_102501",
+        "FA_CANCEL_TEST": "FA_CANCEL_TEST",
+        "FA_ccc8b4ce-444d-11ef-803d-11b752597d08": "FA_ccc8b4ce-444d-11ef-803d-11b752597d08",
+        "UPRO_BUY_4185_61228752_132000": "UPRO_BUY_4185_61228752_132000",
+        "DU9085817": "DU9085817",
+        "DU9085816": "DU9085816",
+        "UPRO_BUY_3990_61228752_093001": "UPRO_BUY_3990_61228752_093001",
+        "UPRO_BUY_503_61228752_122911": "UPRO_BUY_503_61228752_122911",
+        "UPRO_BUY_508_None_111225": "UPRO_BUY_508_None_111225",
+        "UPRO_BUY_75880_61228752_104002": "UPRO_BUY_75880_61228752_104002",
+        "UPRO_SELL_4285_61228752_111000": "UPRO_SELL_4285_61228752_111000",
+        "UPRO_BUY_785_61228752_093001": "UPRO_BUY_785_61228752_093001",
+        "DU9085815": "DU9085815",
+        "UPRO_BUY_503_61228752_122511": "UPRO_BUY_503_61228752_122511",
+        "DU9085814": "DU9085814",
+        "DU9085813": "DU9085813",
+        "FA_17c43d7c-444e-11ef-803d-11b752597d08": "FA_17c43d7c-444e-11ef-803d-11b752597d08",
+        "UPRO_SELL_9985_61228752_111501": "UPRO_SELL_9985_61228752_111501",
+        "FA_CANCEL_TEST_094516_1": "FA_CANCEL_TEST_094516_1",
+        "FA_CANCEL_TEST_094516_0": "FA_CANCEL_TEST_094516_0",
+        "UPRO_BUY_511_None_093002": "UPRO_BUY_511_None_093002",
+        "UPRO_BUY_9985_61228752_105502": "UPRO_BUY_9985_61228752_105502",
+        "UPRO_BUY_4250_61228752_152001": "UPRO_BUY_4250_61228752_152001",
+        "UPRO_BUY_8622_None_155935": "UPRO_BUY_8622_None_155935",
+        "UPRO_SELL_13981_61228752_101003": "UPRO_SELL_13981_61228752_101003",
+        "UPRO_BUY_4275_61228752_152501": "UPRO_BUY_4275_61228752_152501",
+        "UPRO_BUY_4211_61228752_103002": "UPRO_BUY_4211_61228752_103002",
+        "UPRO_BUY_9757_61228752_123002": "UPRO_BUY_9757_61228752_123002",
+        "UPRO_BUY_718_61228752_100020": "UPRO_BUY_718_61228752_100020",
+        "FA_348a2fee-444d-11ef-803d-11b752597d08": "FA_348a2fee-444d-11ef-803d-11b752597d08",
+        "UPRO_SELL_4212_61228752_130021": "UPRO_SELL_4212_61228752_130021",
+        "UPRO_BUY_4195_61228752_122001": "UPRO_BUY_4195_61228752_122001",
+        "UPRO_SELL_14388_61228752_120002": "UPRO_SELL_14388_61228752_120002",
+        "UPRO_BUY_3717_61228752_133502": "UPRO_BUY_3717_61228752_133502",
+        "UPRO_BUY_14056_61228752_101702": "UPRO_BUY_14056_61228752_101702",
+        "UPRO_BUY_4212_61228752_135002": "UPRO_BUY_4212_61228752_135002",
+        "UPRO_BUY_9822_61228752_135502": "UPRO_BUY_9822_61228752_135502",
+        "UPRO_SELL_18970_61228752_104000": "UPRO_SELL_18970_61228752_104000",
+        "UPRO_BUY_3720_61228752_151000": "UPRO_BUY_3720_61228752_151000",
+        "UPRO_BUY_14388_61228752_103002": "UPRO_BUY_14388_61228752_103002",
+        "UPRO_BUY_714_61228752_094932": "UPRO_BUY_714_61228752_094932",
+        "UPRO_BUY_713_61228752_101702": "UPRO_BUY_713_61228752_101702",
+        "UPRO_SELL_9752_61228752_135002": "UPRO_SELL_9752_61228752_135002",
+        "FA_08cb283c-43ac-11ef-803d-11b752597d08": "FA_08cb283c-43ac-11ef-803d-11b752597d08",
+        "UPRO_SELL_44515_61228752_104500": "UPRO_SELL_44515_61228752_104500",
+        "UPRO_BUY_4285_61228752_105000": "UPRO_BUY_4285_61228752_105000",
+        "UPRO_BUY_13981_61228752_094002": "UPRO_BUY_13981_61228752_094002",
+        "UPRO_BUY_503_61228752_123505": "UPRO_BUY_503_61228752_123505",
+        "UPRO_BUY_713.0_61228752_102501": "UPRO_BUY_713.0_61228752_102501",
+        "UPRO_BUY_8628_None_151950": "UPRO_BUY_8628_None_151950",
+        "UPRO_BUY_9357_61228752_093502": "UPRO_BUY_9357_61228752_093502",
+        "UPRO_BUY_4357_61228752_103003": "UPRO_BUY_4357_61228752_103003",
+        "UPRO_BUY_4220_61228752_150000": "UPRO_BUY_4220_61228752_150000",
+        "UPRO_BUY_4264_61228752_155300": "UPRO_BUY_4264_61228752_155300",
+        "UPRO_BUY_3794_61228752_102001": "UPRO_BUY_3794_61228752_102001",
+        "UPRO_BUY_10098_61228752_103500": "UPRO_BUY_10098_61228752_103500",
+        "UPRO_BUY_4222_61228752_105135": "UPRO_BUY_4222_61228752_105135",
+        "GROUP1": "GROUP1",
+        "UPRO_BUY_9752_61228752_133002": "UPRO_BUY_9752_61228752_133002",
+        "UPRO_SELL_3523_None_155800": "UPRO_SELL_3523_None_155800",
+        "UPRO_BUY_505_61228752_120237": "UPRO_BUY_505_61228752_120237",
+        "UPRO_SELL_4185_61228752_134000": "UPRO_SELL_4185_61228752_134000",
+        "UPRO_BUY_72617_61228752_094017": "UPRO_BUY_72617_61228752_094017",
+        "UPRO_BUY_4245_61228752_113000": "UPRO_BUY_4245_61228752_113000"
+    },
+    "allowFeatures": {
+        "showGFIS": true,
+        "showEUCostReport": false,
+        "allowEventContract": true,
+        "allowFXConv": false,
+        "allowFinancialLens": false,
+        "allowMTA": false,
+        "allowTypeAhead": true,
+        "allowEventTrading": true,
+        "snapshotRefreshTimeout": 30,
+        "liteUser": false,
+        "showWebNews": true,
+        "research": true,
+        "debugPnl": true,
+        "showTaxOpt": true,
+        "showImpactDashboard": true,
+        "allowDynAccount": false,
+        "allowCrypto": true,
+        "allowFA": true,
+        "allowLiteUnderPro": false,
+        "allowedAssetTypes": "STK,CFD,OPT,FOP,WAR,FUT,BAG,PDC,CASH,IND,BOND,BILL,FUND,SLB,News,CMDTY,IOPT,ICU,ICS,PHYSS,CRYPTO",
+        "restrictTradeSubscription": false,
+        "showUkUserLabels": false,
+        "sideBySide": true
+    },
+    "chartPeriods": {
+        "STK": [
+            "*"
+        ],
+        "CFD": [
+            "*"
+        ],
+        "OPT": [
+            "2h",
+            "1d",
+            "2d",
+            "1w",
+            "1m"
+        ],
+        "FOP": [
+            "2h",
+            "1d",
+            "2d",
+            "1w",
+            "1m"
+        ],
+        "WAR": [
+            "*"
+        ],
+        "IOPT": [
+            "*"
+        ],
+        "FUT": [
+            "*"
+        ],
+        "CASH": [
+            "*"
+        ],
+        "IND": [
+            "*"
+        ],
+        "BOND": [
+            "*"
+        ],
+        "FUND": [
+            "*"
+        ],
+        "CMDTY": [
+            "*"
+        ],
+        "PHYSS": [
+            "*"
+        ],
+        "CRYPTO": [
+            "*"
+        ]
+    },
+    "groups": [
+        "All"
+    ],
+    "profiles": [
+        "UPRO_BUY_785_61228752_093001",
+        "FA_CANCEL_TEST_094516_1",
+        "UPRO_BUY_4245_61228752_113000",
+        "UPRO_BUY_10098_61228752_103500",
+        "UPRO_BUY_9357_61228752_093502",
+        "UPRO_BUY_4275_61228752_152501",
+        "UPRO_BUY_8628_None_151950",
+        "FA_CANCEL_TEST_094516_0",
+        "FA_08cb283c-43ac-11ef-803d-11b752597d08",
+        "UPRO_BUY_75880_61228752_104002",
+        "UPRO_BUY_503_61228752_123505",
+        "UPRO_SELL_4212_61228752_130021",
+        "UPRO_BUY_3990_61228752_093001",
+        "UPRO_BUY_713.0_61228752_102501",
+        "UPRO_BUY_4250_61228752_152001",
+        "UPRO_BUY_3717_61228752_133502",
+        "UPRO_BUY_9752_61228752_133002",
+        "UPRO_BUY_8622_None_155935",
+        "UPRO_BUY_4357_61228752_103003",
+        "UPRO_BUY_9985_61228752_105502",
+        "UPRO_SELL_44515_61228752_104500",
+        "UPRO_BUY_511_None_093002",
+        "UPRO_BUY_8903_61228752_102501",
+        "UPRO_SELL_9752_61228752_135002",
+        "UPRO_BUY_13981_61228752_094002",
+        "UPRO_SELL_13981_61228752_101003",
+        "UPRO_BUY_505_61228752_120237",
+        "UPRO_BUY_713_61228752_101702",
+        "UPRO_BUY_3720_61228752_151000",
+        "UPRO_SELL_3523_None_155800",
+        "UPRO_BUY_4211_61228752_103002",
+        "UPRO_BUY_508_None_111225",
+        "UPRO_SELL_4285_61228752_111000",
+        "FA_348a2fee-444d-11ef-803d-11b752597d08",
+        "UPRO_BUY_504_61228752_123827",
+        "UPRO_BUY_714_61228752_094932",
+        "UPRO_BUY_4222_61228752_105135",
+        "UPRO_BUY_4264_61228752_155300",
+        "UPRO_BUY_72617_61228752_094017",
+        "UPRO_BUY_4285_61228752_105000",
+        "UPRO_BUY_3794_61228752_102001",
+        "UPRO_BUY_4220_61228752_150000",
+        "UPRO_SELL_4185_61228752_134000",
+        "GROUP1",
+        "UPRO_BUY_14388_61228752_103002",
+        "FA_17c43d7c-444e-11ef-803d-11b752597d08",
+        "UPRO_BUY_4212_61228752_135002",
+        "UPRO_BUY_718_61228752_100020",
+        "UPRO_BUY_503_61228752_122511",
+        "UPRO_BUY_4195_61228752_122001",
+        "UPRO_SELL_14388_61228752_120002",
+        "UPRO_BUY_503_61228752_122911",
+        "FA_ccc8b4ce-444d-11ef-803d-11b752597d08",
+        "UPRO_BUY_9757_61228752_123002",
+        "FA_CANCEL_TEST",
+        "UPRO_BUY_14056_61228752_101702",
+        "UPRO_BUY_3738_61228752_140501",
+        "UPRO_BUY_4185_61228752_132000",
+        "UPRO_BUY_9822_61228752_135502",
+        "UPRO_SELL_9985_61228752_111501",
+        "UPRO_SELL_18970_61228752_104000"
+    ],
+    "selectedAccount": "DU9085813",
+    "serverInfo": {
+        "serverName": "JisfN5028",
+        "serverVersion": "Build 10.44.1d, Mar 3, 2026 1:55:32 PM"
+    },
+    "sessionId": "69afb434.00000067",
+    "isFT": false,
+    "isPaper": true
+}

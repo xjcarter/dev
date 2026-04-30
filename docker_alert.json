@@ -1,0 +1,33 @@
+{
+    "ibeam": {
+        "status": "down",
+        "emails": [
+            "jcarter@hannibalinvestments.com"
+        ]
+    },
+    "mysql_db": {
+        "status": "running",
+        "emails": [
+            "jcarter@hannibalinvestments.com",
+            "xjcarter@gmail.com"
+        ]
+    },
+    "mysql_client": {
+        "status": "running",
+        "emails": [
+            "jcarter@hannibalinvestments.com"
+        ]
+    },
+    "lex_strategy": {
+        "status": "down",
+        "emails": [
+            "jcarter@hannibalinvestments.com"
+        ]
+    },
+    "trade_tester": {
+        "status": "down",
+        "emails": [
+            "jcarter@hannibalinvestments.com"
+        ]
+    }
+}

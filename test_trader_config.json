@@ -1,0 +1,36 @@
+{
+	"at_open": {
+		"trigger_start":"09:30",
+		"label":"sell order at open"
+	},
+	"at_close": {
+		"trigger_start":"15:57",
+		"label":"buy order at close"
+	},
+	"at_eod": {
+		"trigger_start":"16:05",
+		"label":"eod cleanup"
+	},
+	"fetch_open": {
+		"trigger_start": "09:30",
+		"trigger_end": "11:30",
+		"reset_interval": 60, 
+		"label":"intraday price fetch at open"
+	},
+	"fetch_close": {
+		"trigger_start":"14:00",
+		"trigger_end": "15:57",
+		"reset_interval": 60,
+		"label":"intraday price fetch at open"
+	},
+	"at_mid": {
+		"trigger_start":"13:30",
+		"label":"mid_day buy"
+	},
+	"at_bubba": {
+		"trigger_start":"14:30",
+		"label":"mid_day sell"
+	},
+	"universe": ["TSLA"],
+	"max_hold_period": 9
+}

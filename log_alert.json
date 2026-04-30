@@ -1,0 +1,32 @@
+{
+	"logs": {
+
+		"/portfolio/lex2_test/logs/": { 
+			  "label": "lex2",
+			  "keywords": ["polling order status"],
+			  "emails": ["xjcarter@gmail.com"]
+		},
+
+		"/portfolio/aim_test/logs/": { 
+			  "label": "aim",
+			  "keywords": ["polling order status"],
+			  "emails": ["xjcarter@gmail.com"]
+		},
+
+		"/portfolio/test/logs/": { 
+			  "label": "test",
+			  "keywords": [],
+			  "emails": ["xjcarter@gmail.com"]
+		},
+
+		"/root/ibeam_files/outputs/": {
+			  "label": "ibeam",
+			  "keywords": ["Logging in succeeded",
+			               "Validation result is False"],
+                          "suffixes": [".txt"],
+			  "emails": ["xjcarter@gmail.com"]
+		}
+	},
+
+	"globals": ["timed out", "reject", "warning", "critical"]
+}

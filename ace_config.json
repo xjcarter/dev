@@ -1,0 +1,72 @@
+[
+    {
+        "strategy": "basic",
+        "accounts": [
+            {
+                "account": "DF9085812",
+                "allocType": "pctEquity",
+		"allocValue": 20
+	    },
+            {
+                "account": "DU9085813",
+                "allocType": "pctEquity",
+		"allocValue": 20
+            },
+            {
+                "account": "DU9085814",
+                "allocType": "pctEquity",
+		"allocValue": 20
+            },
+            {
+                "account": "DU9085815",
+                "allocType": "pctEquity",
+		"allocValue": 20
+            },
+            {
+                "account": "DU9085816",
+                "allocType": "pctEquity",
+		"allocValue": 20
+            },
+            {
+                "account": "DU9085817",
+                "allocType": "pctEquity",
+		"allocValue": 20
+            }
+        ]
+    },
+    {
+        "strategy": "basic_ema",
+        "accounts": [
+            {
+                "account": "DF9085812",
+                "allocType": "pctEquity",
+		"allocValue": 20
+	    },
+            {
+                "account": "DU9085813",
+                "allocType": "pctEquity",
+		"allocValue": 20
+            },
+            {
+                "account": "DU9085814",
+                "allocType": "pctEquity",
+		"allocValue": 20
+            },
+            {
+                "account": "DU9085815",
+                "allocType": "pctEquity",
+		"allocValue": 20
+            },
+            {
+                "account": "DU9085816",
+                "allocType": "pctEquity",
+		"allocValue": 20
+            },
+            {
+                "account": "DU9085817",
+                "allocType": "pctEquity",
+		"allocValue": 20
+            }
+        ]
+    }
+]
