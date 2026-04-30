@@ -4,7 +4,9 @@ import logging
 import time
 import argparse
 import time, pandas
-from indicators import MondayAnchor, StDev
+from indicators import StDev
+from indicator_sets import EMA_Indicator_Set 
+from bar_aggregator import BarAggregator
 import calendar_calcs
 from strategy2 import Strategy
 from posmgr2 import OrderType, OrderStatus
@@ -15,7 +17,7 @@ def get_time():
     return datetime.today().strftime('%Y%m%d')
 
 ## IMPORTANT - always label correct STRATEGY tag
-STRATEGY = 'basic'
+STRATEGY = 'basic_ema'
 PORTFOLIO_DIRECTORY = os.getenv('PORTFOLIO_DIRECTORY', '/portfolio/')
 DATA_DIR = os.getenv('DATA_DIR', '/trading/data/')
 
@@ -74,10 +76,29 @@ class BasicStrategy(Strategy):
             market_data = self.get_market_snapshot(self.contract_id)
             ## ensure that a price quote was posted.
             ## sometime the first call only establishes a connection
+            """
+            --- returned market_data dict:
+            {
+                "last": 173.96,
+                "ask": 173.95,
+                "bid": 173.96,
+                "bid_sz": 80000,
+                "ask_sz": 20000,
+                "volume": 83916700,
+                "symbol": "AAPL",
+                "conid": 265598,
+                "date": "20230913",
+                "time": "17:15:00",
+                "_updated": "20230913-17:14:59"
+            }
+            """
             if market_data.get('last'):
                 self.intra_prices.append(market_data)
+                return market_data
         except:
-            logger.error('Could not fetch research prices')
+            logger.error('Could not fetch market data')
+        
+        return None
 
     def dump_intraday_prices(self, filepath):
         try:
@@ -89,11 +110,10 @@ class BasicStrategy(Strategy):
             # raise RuntimeError(f"couldn't write intraday data: {filepath}")
 
 
-    def calc_metrics(self, stock_df):
+    def daily_calc_metrics(self, stock_df):
 
         daysback = 50
         self.holidays = calendar_calcs.load_holidays()
-        self.anchor = MondayAnchor(derived_len=daysback)
         self.stdv = StDev(sample_size=daysback)
 
         ss = len(stock_df)
@@ -103,16 +123,12 @@ class BasicStrategy(Strategy):
 
         gg = stock_df[-daysback:]
 
-        ## look up con_id
-        self.contract_id = self.get_contract_id(self.symbol)
-
         last_indicator_date = None
         last_close = None
         for i in range(gg.shape[0]):
             idate = gg.index[i]
             stock_bar = gg.loc[idate]
             cur_dt = datetime.strptime(idate,"%Y-%m-%d").date()
-            self.anchor.push((cur_dt, stock_bar))
             self.stdv.push(stock_bar['Close'])
             last_indicator_date = cur_dt
             last_close = stock_bar['Close']
@@ -185,7 +201,7 @@ class BasicStrategy(Strategy):
                     tgt = { 'symbol': symbol,
                             'target_amt': 0,
                             'order_type': OrderType.MKT,
-                            'stop_price': None,
+                            'stowwwp_price': None,
                             'limit_price': None
                     }
                     targets.append( tgt )
@@ -196,77 +212,51 @@ class BasicStrategy(Strategy):
         return targets
 
 
-    def check_entry(self):
+    def check_entry(self, bar_repo):
+        """
+        no open position, no open orders
+        current bar ma3 > ma13 -> BUY
+        """
+        if self.get_open_orders():
+            return False
 
-        ## do logic else do nothing
-        return True 
+        position_node = self.get_position(self.symbol)
+        current_pos = position_node.position
+        if current_pos is not None and current_pos != 0:
+            return False
 
-        today = datetime.today().date()
-        end_of_week = calendar_calcs.is_end_of_week(today, self.holidays)
-
-        if self.anchor.count() > 0:
-            anchor_bar, bkout = self.anchor.valueAt(0)
-            ## show last indcator date, anchor bar and close
-            if not end_of_week and bkout < 0:
-                logger.critical(f'\nAnchor:\n{anchor_bar}')
-                logger.critical(f'LEX signal')
-                return True
-            else:
-                logger.info(f'\nAnchor:\n{anchor_bar}')
-                logger.info(f'No LEX signal')
+        bar = bar_repo[0]
+        ema3 = bar._indicators.get('ema3')
+        ema13 = bar._indicators.get('ema13')
+        if all([ema3, ema13]) and ema3 > ema13:
+            return True
 
         return False
 
-    
-    def check_exit(self):
 
-        ## do logic else do nothing
-        return True 
-
-        pos_node = self.get_position(self.symbol)
-
-        current_pos = pos_node.position
-        entry_price = pos_node.price
-        duration = pos_node.duration
-        stop_level = pos_node.stop
-
-        if current_pos == 0:
+    def check_exit(self, bar_repo):
+        """
+        open position, no open orders
+        current bar ma3 < ma13 -> SELL 
+        """
+        if self.get_open_orders():
             return False
 
-        current_price = None
-        for i in range(10):
-            current_price, _ask, _bidsz, _asksz = self.get_bid_ask( self.symbol, raise_error=True )
-            if current_price: break
-            time.sleep(0.5)
+        position_node = self.get_position(self.symbol)
+        current_pos = position_node.position
+        if current_pos is not None and current_pos > 0:
+            bar = bar_repo[0]
+            ema3 = bar._indicators.get('ema3')
+            ema13 = bar._indicators.get('ema13')
+            if all([ema3, ema13]) and ema3 < ema13:
+                return True
 
-        if not current_price: 
-            logger.critical('couldnt get prices to evaluate exit')   
-            return False 
+        return False
 
 
-        get_out = False 
-
-        ## add 1 to present overnight duration to account for full day of trading
-        duration += 1
-
-        if duration >= int(self.cfg.get('max_hold_period', 10)):
-            alert = 'EXPIRY'
-            get_out = True
-        elif current_price > entry_price:
-                alert = 'PNL'
-                get_out = True
-        elif current_price < stop_level:
-                alert = 'STOP ON CLOSE'
-                get_out = True
-
-        if get_out:
-            msg = f'exit_details: {self.symbol}= {current_pos}\n'
-            msg += f'current_price= {current_price}, entry= {entry_price}, duration= {duration}'
-            logger.critical(msg)
-        else:
-            logger.info(f'check_exit = NO EXIT')
-
-        return get_out 
+    def exit_on_close(self):
+        ## no exit on close
+        return False
 
 
     def run_strategy(self):
@@ -294,45 +284,56 @@ class BasicStrategy(Strategy):
 
         ## get historical data for the symbol DRIVING trading signals
         ## this is different from the symbol that is used to enter positions
-        ## i.e. generate signals using SPY, enter positions in Emini futures ES
+        """
+        logger.info('calculating trading metrics from daily history.')
         data = self.load_historical_data(self.symbol)
-
-        logger.info('calculating trading metrics.')
-        self.calc_metrics(data)
+        self.daily_calc_metrics(data)
         logger.info('trading metrics calculated.')
+        """
 
         self.connect_to_market(self.symbol)
 
         ## trading operations schedule
-        at_open = create_tripwire(self.cfg.get('at_open'))
+        fetch_prices = create_tripwire(self.cfg.get('fetch_prices'))
         at_close = create_tripwire(self.cfg.get('at_close'))
         at_end_of_day = create_tripwire(self.cfg.get('at_eod'))
-        fetch_open_prices = create_tripwire(self.cfg.get('fetch_open'))
-        fetch_close_prices = create_tripwire(self.cfg.get('fetch_close'))
 
         ## reporting TripWires
-        yy = [at_open, at_close, at_end_of_day, fetch_open_prices, fetch_close_prices]
+        yy = [fetch_prices, at_close, at_end_of_day]
         logger.info(f'\nTripWire setup:\n{yy}')
 
+        ## create 10-minute bars and add 3,13-bar EMAs
+        checkpoint_file = f'{PORTFOLIO_DIRECTORY}/{STRATEGY}/data/ema_set/ema_set.checkpoint'
+        bar_repo = BarAggregator(bar_minutes=10, indicator_set=EMA_Indicator_Set)
+        ## grab checkpoint to continue indicator calculations
+        try:
+            bar_repo.load_checkpoint(checkpoint_file)
+            logger.info(f'checkpoint: {checkpoint_file} loaded.')
+        except:
+            logger.info(f'no checkpoint_file loaded.')
+        
         logger.info('starting trading loop.')
 
         while True:
 
-            ## capturing 1 min price snapshots - first 2 hours
-            with fetch_open_prices as fetch_open:
-                if fetch_open:
-                    self.fetch_prices()
+            ## capturing 1 min price snapshots
+            ## and building 10min bars + indicators in bar_repo
+            with fetch_prices as get_prices:
+                new_bar = None
+                if get_prices:
+                    market_data = self.fetch_prices()
+                    if market_data is not None:
+                        new_bar = bar_repo.push(market_data)
+                        if new_bar is not None:
+                            logger.info(f'new bar added: {new_bar}')
 
-            ## capturing 1 min price snapshots - last 2 hours 
-            with fetch_close_prices as fetch_close:
-                if fetch_close:
-                    self.fetch_prices()
-
-            with at_open as opening:
-                if opening:
-                    if self.check_entry():
+                if new_bar:
+                    if self.check_entry(bar_repo):
                         _target_map = self.get_targets( self.calc_entry_targets )
-                        self.send_orders( _target_map, order_notes='Basic Entry')
+                        self.send_orders( _target_map, order_notes='EMA Entry')
+                    elif self.check_exit(bar_repo):
+                        _target_map = self.get_targets( self.calc_exit_targets )
+                        self.send_orders( _target_map, order_notes='EMA Exit')
                     else:
                         position_node = self.get_position(self.symbol)
                         current_pos = position_node.position
@@ -344,12 +345,11 @@ class BasicStrategy(Strategy):
                 for fill in self.check_orders():
                     self.process_fill(fill)
 
-
             with at_close as closing:
                 if closing:
-                    if self.check_exit(): 
+                    if self.exit_on_close(): 
                         _target_map = self.get_targets( self.calc_exit_targets )
-                        self.send_orders( _target_map, order_notes='Basic Exit' )
+                        self.send_orders( _target_map, order_notes='Exit On Close' )
                     else:
                         position_node = self.get_position(self.symbol)
                         current_pos = position_node.position
@@ -363,6 +363,13 @@ class BasicStrategy(Strategy):
                     intra_file = f'{PORTFOLIO_DIRECTORY}/{STRATEGY}/data/{self.symbol}.{today}.csv'
                     logger.info(f'saving intraday prices to: {intra_file}')
                     self.dump_intraday_prices(intra_file)
+
+                    self.create_directory(f'{PORTFOLIO_DIRECTORY}/{STRATEGY}/data/ema_set')
+                    analytics_file = f'{PORTFOLIO_DIRECTORY}/{STRATEGY}/data/ema_set/{self.symbol}.{today}.csv'
+                    logger.info(f'saving intraday analytics: {analytics_file}')
+                    bar_repo.save(analytics_file)
+                    logger.info(f'saving checkpoint: {checkpoint_file}')
+                    bar_repo.write_checkpoint(checkpoint_file)
 
                     self.close_trading_book()
                     logger.critical('end of day completed.')

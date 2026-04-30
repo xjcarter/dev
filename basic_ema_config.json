@@ -1,0 +1,17 @@
+{
+        "universe": ["UPRO"],
+        "fetch_prices": {
+                "trigger_start": "9:30",
+                "trigger_end": "16:00",
+                "reset_interval": 60,
+                "label":"intraday price fetch"
+        },
+        "at_close": {
+                "trigger_start":"15:55",
+                "label":"conditional sell order at close"
+        },
+        "at_eod": {
+                "trigger_start":"16:00",
+                "label":"eod cleanup"
+        }
+}
