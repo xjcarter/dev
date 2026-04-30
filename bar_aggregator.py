@@ -90,6 +90,42 @@ class Bar:
 
         return instance
 
+
+    def to_dict(self, include_indicators: bool = True, json_safe: bool = True) -> dict:
+        """
+        Convert Bar to dict with JSON-safe options.
+        
+        Args:
+            include_indicators: Include indicator values
+            json_safe: Convert non-JSON-serializable values (NaN, infinity) to None
+        
+        Returns:
+            Dictionary representation
+        """
+        result = {
+            'open': self.open,
+            'high': self.high,
+            'low': self.low,
+            'close': self.close,
+            'volume': self.volume,
+            'count': self.count,
+            'timestamp': self.timestamp
+        }
+        
+        # Add indicators
+        if include_indicators and self._indicators:
+            result.update(self._indicators)
+        
+        # Make JSON-safe by converting NaN/Inf to None
+        if json_safe:
+            import math
+            for key, value in result.items():
+                if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+                    result[key] = None
+        
+        return result
+
+
     def annotate(self, new_data: dict) -> None:
         if self._indicators is None:
             self._indicators = dict()
