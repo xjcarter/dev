@@ -318,8 +318,8 @@ class BarAggregator:
             # add on indicator calculations if warranted
             if self.indicator_set is not None:
                 bar = self.indicator_set.run_indicators(bar)
-        except:
-            logger.critical(f'Bar annotation failed. Bar:{bar}')
+        except Exception as e:
+            logger.critical(f'Bar annotation failed. Bar:{bar}: {e}')
 
         return bar
 
