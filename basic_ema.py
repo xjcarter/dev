@@ -304,7 +304,7 @@ class BasicStrategy(Strategy):
 
         ## create 10-minute bars and add 3,13-bar EMAs
         checkpoint_file = f'{PORTFOLIO_DIRECTORY}/{STRATEGY}/data/ema_set/ema_set.checkpoint'
-        bar_repo = BarAggregator(bar_minutes=10, indicator_set=EMA_Indicator_Set)
+        bar_repo = BarAggregator(bar_minutes=10, indicator_set=EMA_Indicator_Set())
         ## grab checkpoint to continue indicator calculations
         try:
             bar_repo.load_checkpoint(checkpoint_file)
@@ -325,7 +325,7 @@ class BasicStrategy(Strategy):
                     if market_data is not None:
                         new_bar = bar_repo.push(market_data)
                         if new_bar is not None:
-                            logger.info(f'new bar added: {new_bar}')
+                            logger.info(f'BAR -> {new_bar}')
 
                 if new_bar:
                     if self.check_entry(bar_repo):
