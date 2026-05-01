@@ -50,6 +50,19 @@ class Bar:
     # indicator mappings
     _indicators: dict[str, float | None] = field(default_factory=dict)
 
+    def copy(self) -> 'Bar':
+        """Create a deep copy of this Bar instance."""
+        return Bar(
+            open=self.open,
+            high=self.high,
+            low=self.low,
+            close=self.close,
+            volume=self.volume,
+            count=self.count,
+            timestamp=self.timestamp,
+            _indicators=self._indicators.copy() if self._indicators else {}
+        )
+
     @classmethod
     def from_dict(cls, data: dict) -> 'Bar':
         core_fields = {'open', 'high', 'low', 'close', 'volume', 'count', 'timestamp', 'date', 'time'}
@@ -138,7 +151,10 @@ class Bar:
         s = []
         if self._indicators is not None:
             for k, v in self._indicators.items():
-                s.append(f'{k}: {v:.3f}')
+                if v is not None:
+                    s.append(f'{k}: {v:.3f}')
+                else:
+                    s.append(f'{k}: None')
             return ", ".join(s)
         return ""
 
@@ -228,6 +244,11 @@ def _minutes_to_hhmm(total: int) -> str:
 def _bar_start(minute_of_day: int, bar_minutes: int) -> int:
     """Return the bin-start minute for *minute_of_day*."""
     return (minute_of_day // bar_minutes) * bar_minutes
+
+def _bar_end(minute_of_day: int, bar_minutes: int) -> int:
+    """Return the bin-end minute for *minute_of_day*."""
+    start = _bar_start(minute_of_day, bar_minutes)
+    return start + bar_minutes
 
 
 # ---------------------------------------------------------------------------
@@ -345,10 +366,20 @@ class BarAggregator:
         vol_raw = rec.get("volume", 0)
         volume = float(vol_raw) if vol_raw not in (None, "", " ") else 0.0
 
+        """
+        MARKING BAR AT BEGIN TS
         minute_of_day = _time_to_minutes(time_hhmm)
         bin_start = _bar_start(minute_of_day, self.bar_minutes)
         bin_hhmm = _minutes_to_hhmm(bin_start)
         bin_key = f"{date_str}-{bin_hhmm}"
+        """
+
+        """ MARKING AT END TS """
+        minute_of_day = _time_to_minutes(time_hhmm)
+        bin_start = _bar_start(minute_of_day, self.bar_minutes)
+        bin_end = bin_start + self.bar_minutes  # Calculate end time
+        bin_hhmm_end = _minutes_to_hhmm(bin_end)  # Use end time for display
+        bin_key = f"{date_str}-{bin_hhmm_end}"  # Store end time in key
 
         # Same bin as current accumulator → keep accumulating
         if self._current is not None and bin_key == self._current_bin_key:
@@ -362,7 +393,7 @@ class BarAggregator:
             bar = self._current.to_bar(self.volume_fn)
             bar = self.annotate(bar)
             self._bars.insert(0, bar)  # prepend so index 0 = newest
-            current_bar = Bar(bar)
+            current_bar = bar.copy()
 
         self._current = _BarAccumulator(timestamp=bin_key)
         self._current_bin_key = bin_key
