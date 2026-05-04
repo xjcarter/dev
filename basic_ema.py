@@ -201,7 +201,7 @@ class BasicStrategy(Strategy):
                     tgt = { 'symbol': symbol,
                             'target_amt': 0,
                             'order_type': OrderType.MKT,
-                            'stowwwp_price': None,
+                            'stop_price': None,
                             'limit_price': None
                     }
                     targets.append( tgt )
@@ -325,7 +325,7 @@ class BasicStrategy(Strategy):
                     if market_data is not None:
                         new_bar = bar_repo.push(market_data)
                         if new_bar is not None:
-                            logger.info(f'BAR -> {new_bar}')
+                            logger.info(f'{new_bar}')
 
                 if new_bar:
                     if self.check_entry(bar_repo):
