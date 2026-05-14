@@ -8,6 +8,7 @@ import pandas
 from prettytable import PrettyTable
 from df_html_fancy import basic_table_to_html
 
+import os
 
 class DumpFormat(str, Enum):
     STDOUT = 'STDOUT'
@@ -35,6 +36,8 @@ class Reporter:
         self.output_directory: str | None = None
 
     def set_output_directory(self, filepath: str) -> None:
+        if not os.path.exists(filepath):
+            os.makedirs(filepath)
         self.output_directory = filepath
 
     # ── header / footer for ledger printout ────────────────────────────
@@ -75,19 +78,64 @@ class Reporter:
 
         # ── basic counts ───────────────────────────────────────────
         trade_count = len(trades_df)
-        win_count = len(trades_df[trades_df['PNL'] > 0])
+        win_count = len(trades_df[trades_df['PnL'] > 0])
         loss_count = trade_count - win_count
         win_pct = win_count / trade_count
 
-        # ── daily equity returns (log-based for additive properties) ─
-        equity = pnl_series['Equity']
-        # filter out flat-equity days where position is 0 and equity
-        # hasn't changed — they dilute volatility and inflate Sharpe
-        daily_returns = equity.pct_change().dropna()
-        log_returns = numpy.log(equity / equity.shift(1)).dropna()
+        # ── time span from actual dates ────────────────────────────
+        # Using calendar dates is more accurate than dividing trading
+        # day count by 252, which drifts over long periods.
+        first_date = pandas.to_datetime(pnl_series.iloc[0]['Date'])
+        last_date = pandas.to_datetime(pnl_series.iloc[-1]['Date'])
+        years = (last_date - first_date).days / 365.25
+        if years <= 0:
+            return False
 
-        n_days = len(daily_returns)
-        years = n_days / 252.0
+        # ── daily equity returns ───────────────────────────────────
+        equity = pnl_series['Equity']
+        log_returns_all = numpy.log(equity / equity.shift(1)).dropna()
+        n_days = len(log_returns_all)
+
+        # Separate active-day returns (days with position changes)
+        # from flat days (no position, equity unchanged).
+        # Both views are useful: "all days" measures total-capital
+        # performance; "active days" measures deployed-capital performance.
+        active_log_returns = log_returns_all[log_returns_all != 0]
+        n_active = len(active_log_returns)
+        active_per_year = n_active / years if years > 0 else 0
+
+        # ── annualised stats (all days — total capital view) ───────
+        annual_vol = log_returns_all.std() * math.sqrt(252)
+        annualised_mean = log_returns_all.mean() * 252
+        sharpe = annualised_mean / annual_vol if annual_vol != 0 else 0.0
+
+        # ── annualised stats (active days — deployed capital view) ─
+        if n_active > 1 and active_per_year > 0:
+            active_annual_vol = active_log_returns.std() * math.sqrt(active_per_year)
+            active_annualised_mean = active_log_returns.mean() * active_per_year
+            active_sharpe = active_annualised_mean / active_annual_vol if active_annual_vol != 0 else 0.0
+        else:
+            active_annual_vol = 0.0
+            active_annualised_mean = 0.0
+            active_sharpe = 0.0
+
+        # ── Sortino: penalise only downside deviation ──────────────
+        # Correct method: replace positive returns with 0, then take
+        # std over the FULL series. Using only negative returns
+        # overstates the denominator by excluding the zero mass.
+        downside_returns = log_returns_all.copy()
+        downside_returns[downside_returns > 0] = 0
+        downside_dev = downside_returns.std() * math.sqrt(252)
+        sortino = annualised_mean / downside_dev if downside_dev != 0 else 0.0
+
+        # active-day Sortino
+        if n_active > 1 and active_per_year > 0:
+            active_downside = active_log_returns.copy()
+            active_downside[active_downside > 0] = 0
+            active_dd_dev = active_downside.std() * math.sqrt(active_per_year)
+            active_sortino = active_annualised_mean / active_dd_dev if active_dd_dev != 0 else 0.0
+        else:
+            active_sortino = 0.0
 
         # ── per-trade return series (percentage) ───────────────────
         trade_returns = (trades_df['Exit'] / trades_df['Entry']) - 1
@@ -96,7 +144,7 @@ class Reporter:
         trade_losses = trade_returns[trade_returns < 0]
 
         # ── dollar P&L series ──────────────────────────────────────
-        dollar_pnl = trades_df['PNL']
+        dollar_pnl = trades_df['PnL']
         dollar_wins = dollar_pnl[dollar_pnl > 0]
         dollar_losses = dollar_pnl[dollar_pnl <= 0]
 
@@ -118,20 +166,6 @@ class Reporter:
         total_rtn = (end_equity / start_equity) - 1
         cagr = ((end_equity / start_equity) ** (1.0 / years)) - 1 if years > 0 else 0.0
 
-        # annualised volatility from daily log returns
-        annual_vol = log_returns.std() * math.sqrt(252)
-
-        # ── Sharpe: (annualised mean excess return) / annual vol ───
-        # using mean of daily log returns × 252 as the annualised
-        # numerator — more accurate than CAGR / vol for Sharpe
-        annualised_mean = log_returns.mean() * 252
-        sharpe = annualised_mean / annual_vol if annual_vol != 0 else 0.0
-
-        # ── Sortino: penalise only downside deviation ──────────────
-        downside = log_returns[log_returns < 0]
-        downside_dev = downside.std() * math.sqrt(252) if len(downside) > 1 else 0.0
-        sortino = annualised_mean / downside_dev if downside_dev != 0 else 0.0
-
         # ── drawdown analysis (vectorised) ─────────────────────────
         rolling_max = equity.cummax()
         drawdown_series = (equity / rolling_max) - 1
@@ -149,6 +183,9 @@ class Reporter:
         dd_durations = underwater.groupby(dd_groups).sum()
         max_dd_duration = int(dd_durations.max()) if len(dd_durations) else 0
 
+        # flag if the equity curve ends in an unrecovered drawdown
+        dd_is_open = bool(drawdown_series.iloc[-1] < 0)
+
         # ── Calmar ratio: CAGR / |MaxDD| ──────────────────────────
         calmar = cagr / abs(max_dd) if max_dd != 0 else 0.0
 
@@ -157,7 +194,7 @@ class Reporter:
         max_duration = int(trades_df['Duration'].max())
 
         # duration split by win/loss
-        winning_mask = trades_df['PNL'] > 0
+        winning_mask = trades_df['PnL'] > 0
         avg_win_duration = trades_df.loc[winning_mask, 'Duration'].mean() if win_count else 0.0
         avg_loss_duration = trades_df.loc[~winning_mask, 'Duration'].mean() if loss_count else 0.0
 
@@ -182,7 +219,10 @@ class Reporter:
         max_consec_losses = int(loss_streaks['count'].max()) if len(loss_streaks) else 0
 
         # ── exposure: fraction of days with an open position ───────
-        days_in_market = (pnl_series['Position'] != 0).sum()
+        # Position is NaN on days with no trade; NaN != 0 is True in
+        # pandas, so we must explicitly check for non-null AND non-zero.
+        has_position = pnl_series['Position'].notna() & (pnl_series['Position'] != 0)
+        days_in_market = has_position.sum()
         exposure = days_in_market / n_days if n_days > 0 else 0.0
 
         # ── per-trade drawdown stats (from Trade.Drawdown field) ───
@@ -198,16 +238,22 @@ class Reporter:
             CAGR=cagr,
             NetProfit=net_profit,
 
-            # ── risk-adjusted ───────────
+            # ── risk-adjusted (total capital) ─
             Sharpe=sharpe,
             Sortino=sortino,
             Calmar=calmar,
             AnnualVol=annual_vol,
 
+            # ── risk-adjusted (deployed capital) ─
+            ActiveSharpe=active_sharpe,
+            ActiveSortino=active_sortino,
+            ActiveVol=active_annual_vol,
+
             # ── drawdown ────────────────
             MaxDD=max_dd,
             AvgDD=avg_dd,
             MaxDD_Days=max_dd_duration,
+            MaxDD_Open=dd_is_open,
             AvgTradeDD=avg_trade_dd,
             MaxTradeDD=max_trade_dd,
 
@@ -253,7 +299,7 @@ class Reporter:
     def format_df(self, records) -> pandas.DataFrame:
         """Pretty‑format a list of dicts (or dataclass objects) for display."""
         FLOAT_FIELDS = set('Entry Entry_Price Exit Exit_Price MTM '
-                           'Drawdown Equity PNL High Low'.split())
+                           'Drawdown Equity PnL High Low'.split())
         INT_FIELDS = set('Position Duration Max_Offset Min_Offset Amount'.split())
 
         def _fmt(value, precision=3):
@@ -276,7 +322,7 @@ class Reporter:
 
     def format_table(self, pretty_table: PrettyTable) -> PrettyTable:
         COLUMNS_TO_CENTER = set('Date Entry_Date Exit_Date Entry_Label Exit_Label'.split())
-        MONEY_COLUMNS = set('MTM PNL Equity'.split())
+        MONEY_COLUMNS = set('MTM PnL Equity'.split())
 
         new_table = pretty_table.copy()
         for col in pretty_table.field_names:

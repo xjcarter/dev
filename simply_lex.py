@@ -1,15 +1,15 @@
 from dataclasses import dataclass, fields, asdict
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 import csv
 
-from indicators import MondayAnchor
+from indicators import MondayAnchor, Volatility
 import calendar_calcs
-from strategy_reports import Reporter, DumpFormat
+from strategy_reports2 import Reporter, DumpFormat
 
-DIRECTORY_NAME = '/Users/jcarter/hannibal/dev/simply_lex/'
+#DIRECTORY_NAME = '/Users/jcarter/hannibal/dev/simply_lex/adjusted_risk'
+DIRECTORY_NAME = '/Users/jcarter/hannibal/dev/simply_lex/scaled_33_after_d3_d6/'
 HOLIDAYS = '/Users/jcarter/hannibal/dev/us_market_holidays.csv'
-
 
 @dataclass
 class OHLCBar:
@@ -149,6 +149,7 @@ class SimplyLex:
     def __init__(self, data_source: str, capital: float):
         self.data = self.load_data(data_source)
         self.anchor = MondayAnchor(derived_len=20)
+        self.volatility = Volatility(derived_len=20)
         self.holidays = calendar_calcs.load_holidays(HOLIDAYS)
         self.current_trade: Optional[Trade] = None
 
@@ -159,6 +160,9 @@ class SimplyLex:
         self.trades: list[Trade] = []
         # daily account snapshots (DailyRecord objects)
         self.test_ledger: list[DailyRecord] = []
+
+        # rest flag for stopped out trades
+        self.cooldown = 0
 
     # ── data loading ───────────────────────────────────────────────────
     @staticmethod
@@ -216,9 +220,27 @@ class SimplyLex:
 
 
     # ── position sizing ────────────────────────────────────────────────
-    def calculate_trade_amount(self, bar: OHLCBar, wiggle: float = 0.0) -> int:
-        """Shares affordable at the bar's Open, with an optional slippage buffer."""
-        return int(self.capital / ((1 + wiggle) * bar.Open))
+
+    def calculate_trade_amount(self, bar, wiggle=0.0):
+        #standard weights .35, FLOOR = 0.15, CEILING= 0.60
+        DEPLOY_FRACTION = 0.35
+        TARGET_VOL = 0.40  # median UPRO 20d vol
+        FLOOR = 0.15
+        CEILING = 0.60
+
+        frac = DEPLOY_FRACTION
+        if self.volatility.count() > 0:
+            current_vol = self.volatility.valueAt(0)
+            if current_vol > 0:
+                frac = DEPLOY_FRACTION * (TARGET_VOL / current_vol)
+                frac = max(FLOOR, min(CEILING, frac))
+        deployed = self.capital * frac
+
+        return int(deployed / ((1 + wiggle) * bar.Open))
+
+    def fractional_trade_amount(self, bar, frac=0.5, wiggle=0.0):
+        deployed = self.capital * frac
+        return int(deployed / ((1 + wiggle) * bar.Open))
 
     # ── mark‑to‑market ─────────────────────────────────────────────────
     def mtm(self, bar: OHLCBar, closed: int) -> None:
@@ -264,49 +286,56 @@ class SimplyLex:
 
         cur_dt = calendar_calcs.cvt_date(bar.Date)
         self.anchor.push((cur_dt, bar.to_dict()))
+        self.volatility.push(bar.Adj_Close)
         end_of_week = calendar_calcs.is_end_of_week(cur_dt, self.holidays)
 
-        # ── entry logic ────────────────────────────────────────────────
-        if not self.open_position and self.anchor.count() > 1:
+        if self.cooldown > 0:
+            self.cooldown -= 1
+
+        if all([self.open_position == False, self.anchor.count() > 1, self.cooldown == 0]):
             anchor_bar, bkout = self.anchor.valueAt(1)
             if bkout < 0 and not end_of_week:
-                shares = self.calculate_trade_amount(bar)
+                #shares = self.calculate_trade_amount(bar)
+                shares = self.fractional_trade_amount(bar, frac=1.0)
                 self.buy(bar, shares, bar.Open, 'Lex')
 
         # ── exit logic ─────────────────────────────────────────────────
         closed = None
         if self.open_position:
-            closed = self.standard_exit(bar)
+            #closed = self.standard_exit(bar, 10)
+            closed = self.scaled_exit(bar, exit_points=[3,6])
 
         self.mtm(bar, closed)
 
 
     # ── exit strategies ────────────────────────────────────────────────────────
-    def standard_exit(self, bar: OHLCBar) -> None:
+    def standard_exit(self, bar: OHLCBar, expiry_days: int) -> None:
         closed = self.current_trade.Amount
         self.current_trade.Duration += 1
         if bar.Adj_Close > self.current_trade.Entry:
             self.sell(bar, closed, bar.Adj_Close, 'PnL')
         else:
-            if self.current_trade.Duration >= 10:
+            if self.current_trade.Duration >= expiry_days: 
                 self.sell(bar, closed, bar.Adj_Close, 'Exp')
         return closed
 
-
-    def after_six_exit(self, bar: OHLCBar) -> None:
+    def scaled_exit(self, bar: OHLCBar, exit_points: List[int]) -> None:
         closed = self.current_trade.Amount
         self.current_trade.Duration += 1
         if bar.Adj_Close > self.current_trade.Entry:
             self.sell(bar, closed, bar.Adj_Close, 'PnL')
-        else:
-            if self.current_trade.Duration == 6:
-                closed = self.current_trade.Amount // 2
-                self.current_trade.Amount -= closed 
-                self.sell(bar, closed, bar.Adj_Close, 'Half')
-            elif self.current_trade.Duration >= 10:
-                closed = self.current_trade.Amount
-                self.sell(bar, closed, bar.Adj_Close, 'Exp')
-        return closed
+            return closed
+
+        divisor = len(exit_points) + 1
+
+        if self.current_trade.Duration in exit_points: 
+            closed = self.current_trade.Amount // divisor
+            self.sell(bar, closed, bar.Adj_Close, f'D{self.current_trade.Duration}')
+            return closed
+
+        if self.current_trade.Duration >= 10:
+            self.sell(bar, closed, bar.Adj_Close, 'Exp')
+            return closed
 
 
     # ── runners ────────────────────────────────────────────────────────
@@ -323,11 +352,11 @@ class SimplyLex:
         reporter.generate_metrics()
         reporter.dump_equity_curve(
             formats=[DumpFormat.STDOUT, DumpFormat.CSV, DumpFormat.HTML])
+        reporter.dump_trades(
+            formats=[DumpFormat.CSV, DumpFormat.HTML])
         reporter.dump_metrics(
             transpose=True,
-            formats=[DumpFormat.STDOUT, DumpFormat.JSON])
-        reporter.dump_trades(
-            formats=[DumpFormat.STDOUT, DumpFormat.CSV])
+            formats=[DumpFormat.STDOUT, DumpFormat.JSON, DumpFormat.HTML])
 
 
 

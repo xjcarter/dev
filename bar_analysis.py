@@ -93,6 +93,9 @@ def analyse_file(filepath: Path, bar_minutes: int = 10) -> dict:
 
     bars_for_avg = min(3, n)
     avg_close_3 = sum(agg[n - 1 - i].close for i in range(bars_for_avg)) / bars_for_avg
+    
+    ## open inclusive
+    ## avg_close_3 = (sum(agg[n - 2 - i].close for i in range(bars_for_avg-1)) + first_bar.open) / bars_for_avg
 
     pct_open_to_avg = _pct_diff(first_open, avg_close_3)
     pct_close_to_avg = _pct_diff(first_close, avg_close_3)

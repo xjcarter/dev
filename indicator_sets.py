@@ -1,5 +1,5 @@
 
-from indicators import MA
+from indicators import MA, EMA
 from dataclasses import dataclass, field
 
 class Test_Indicator_Set:
@@ -68,8 +68,9 @@ class EMA_Indicator_Set:
 
 
 	def __init__(self):
-		self.ema3 = EMA(3)
-		self.ema13 = EMA(13)
+        ## ema coeff = 2/(n+1)
+		self.ema3 = EMA(0.5, 3)
+		self.ema13 = EMA(0.142857, 13)
 		self.name = 'ema3-ema13'
 
 	@property
@@ -78,8 +79,8 @@ class EMA_Indicator_Set:
 
 	# reset- create new indicators
 	def reset(self):
-		self.ema3 = EMA(3)
-		self.ema13 = EMA(13)
+		self.ema3 = EMA(0.5, 3)
+		self.ema13 = EMA(0.142857, 13)
 
 	## annotate the given bar with updated indicator values
 	def run_indicators(self, bar):
