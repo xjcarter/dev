@@ -8,7 +8,7 @@ import calendar_calcs
 from strategy_reports2 import Reporter, DumpFormat
 
 #DIRECTORY_NAME = '/Users/jcarter/hannibal/dev/simply_lex/adjusted_risk'
-DIRECTORY_NAME = '/Users/jcarter/hannibal/dev/simply_lex/scaled_33_after_d3_d6/'
+DIRECTORY_NAME = '/Users/jcarter/hannibal/dev/simply_lex/expiry6_d3/'
 HOLIDAYS = '/Users/jcarter/hannibal/dev/us_market_holidays.csv'
 
 @dataclass
@@ -302,7 +302,7 @@ class SimplyLex:
         # ── exit logic ─────────────────────────────────────────────────
         closed = None
         if self.open_position:
-            #closed = self.standard_exit(bar, 10)
+            #closed = self.standard_exit(bar, 6)
             closed = self.scaled_exit(bar, exit_points=[3,6])
 
         self.mtm(bar, closed)
@@ -326,14 +326,15 @@ class SimplyLex:
             self.sell(bar, closed, bar.Adj_Close, 'PnL')
             return closed
 
-        divisor = len(exit_points) + 1
+        # equal division of exits up to expiration
+        divisor = len(exit_points)
 
-        if self.current_trade.Duration in exit_points: 
+        if self.current_trade.Duration in exit_points[:-1]: 
             closed = self.current_trade.Amount // divisor
             self.sell(bar, closed, bar.Adj_Close, f'D{self.current_trade.Duration}')
             return closed
 
-        if self.current_trade.Duration >= 10:
+        if self.current_trade.Duration >= exit_points[-1]:
             self.sell(bar, closed, bar.Adj_Close, 'Exp')
             return closed
 
