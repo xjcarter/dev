@@ -1,0 +1,48 @@
+{
+	"symbols": {
+		"SPY": 756733,
+		"UPRO": 61228752,
+		"VXX": 717288676,
+		"SVXY": 331641614,
+		"SPX": 416904,
+		"VIX": 13455763,
+		"MESM6": 770561194,
+		"MESU6": 793356217,
+		"MESZ6": 815824257,
+		"ESM6": 649180678, 
+		"ESU6": 649180671,
+		"ESZ6": 515416632,
+	        "AAPL": 265598,
+	        "JPM": 1520593,
+	        "BITO": 521525019,
+	        "BITF":	497901061,	
+	        "NVDA": 4815747,
+		"GOOGL": 208813719,
+		"IBM": 8314,
+		"MSFT": 272093,
+		"TECL": 56539091,
+		"WMT": 	13824,
+		"AMZN": 3691937,
+	        "WM": 13379,
+		"AP": 4471,
+		"BND": 43645828,
+		"VTI": 12340041,
+		"INTF": 192643864
+	},
+        "start_fetch": {
+                "trigger_start":"9:30",
+                "trigger_end": "16:01",
+                "reset_interval": 60,
+                "label":"intraday data fetch start"
+        },
+        "monitor_fetch": {
+                "trigger_start":"9:30",
+                "trigger_end": "16:01",
+                "reset_interval": 900,
+                "label":"intraday data fetch monitor (every 15mins)"
+        },
+        "dump_data": {
+                "trigger_start":"16:02",
+                "label":"archive intraday data"
+        }
+}
