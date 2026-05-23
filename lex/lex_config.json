@@ -1,0 +1,23 @@
+{
+        "universe": ["UPRO"],
+        "max_hold_period": 10,
+        "at_open": {
+                "trigger_start":"9:30",
+                "trigger_end": "10:01",
+                "label":"incremental buy during first 30mins"
+        },
+        "at_close": {
+                "trigger_start":"15:55",
+                "label":"sell order at close"
+        },
+        "at_eod": {
+                "trigger_start":"16:00:30",
+                "label":"eod cleanup"
+        },
+        "fetch_prices": {
+                "trigger_start": "9:30",
+                "trigger_end": "16:00:30",
+                "reset_interval": 60,
+                "label":"intraday price fetch"
+        }
+}
