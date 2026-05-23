@@ -1,0 +1,41 @@
+# Use the official Python image as the base image
+FROM python:3
+
+USER root
+
+## the container name of the MYSQL server 
+ENV MYSQL_HOSTNAME='mysql_db'
+ENV MYSQL_PASSWORD='Eleph@ntTusk123$'
+ENV TZ='America/New_York'
+
+## IBRK portal connectivity
+ENV IB_WEB_HOST='97.107.130.78'
+ENV IB_ACCOUNT='DU7631004'
+
+## strategy set up 
+ENV STRATEGY='test'
+ENV EXECUTABLE="test_trader.py"
+ENV CONFIG_FILE="test_trader_config.json"
+ENV PORTFOLIO_DIRECTORY='/portfolio'
+ENV DATA_DIR='/trading/data/'
+ENV PYTHONPATH=.:/trading/lib:/trading/utils
+
+##  additional libs needed 
+RUN pip install pandas
+RUN pip install numpy
+RUN pip install requests 
+RUN pip install pytz
+RUN pip install urllib3
+RUN pip install mysql-connector-python
+
+# Update package lists and install vi
+RUN apt-get update && apt-get install -y vim
+# Install the MySQL client library
+RUN apt-get update && apt-get install -y default-mysql-client
+
+# Set the working directory inside the contaidocker create --name ib_portal --network tradenet -p 5000:5000 dradrian/ibportalner
+# this bound to the outside a /trading/strats
+WORKDIR /trading/strats/${STRATEGY}
+
+# launch the strategy 
+#CMD python ${EXECUTABLE} --strategy_id ${STRATEGY} --config ${CONFIG_FILE}

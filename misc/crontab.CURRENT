@@ -1,0 +1,147 @@
+# Edit this file to introduce tasks to be run by cron.
+# 
+# Each task to run has to be defined through a single line
+# indicating with different fields when the task will be run
+# and what command to run for the task
+# 
+# To define the time you can provide concrete values for
+# minute (m), hour (h), day of month (dom), month (mon),
+# and day of week (dow) or use '*' in these fields (for 'any').
+# 
+# Notice that tasks will be started based on the cron's system
+# daemon's notion of time and timezones.
+# 
+# Output of the crontab jobs (including errors) is sent through
+# email to the user the crontab file belongs to (unless redirected).
+# 
+# For example, you can run a backup of all your user accounts
+# at 5 a.m every week with:
+# 0 5 * * 1 tar -zcf /var/backups/home.tgz /home/
+# 
+# For more information see the manual pages of crontab(5) and cron(8)
+# 
+# m h  dom mon dow   command
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+PYTHONPATH=.:/trading/lib:/trading/utils
+PORTFOLIO_DIRECTORY='/portfolio'
+DATA_DIR='/trading/data/'
+TZ='America/New_York'
+ADMIN_MAIL='jcarter@hannibalinvestments.com'
+MYSQL_HOSTNAME='96.126.109.155'
+MYSQL_PASSWORD='Eleph@ntTusk123$'
+
+### BITFARMS 
+
+00 * * * * /root/sandbox/bitfarms/code/deribit_snapshot.sh 
+00 * * * * /root/sandbox/bitfarms/code/bitnomial_snapshot.sh 
+
+## turn off and restart bitnomial process every Sunday night
+15 23 * * 7 pkill -f bitnomial_data.py 
+45 23 * * 7 python3 /root/sandbox/bitfarms/code/bitnomial_data.py &
+
+## transfer snapshots into folders
+30 23 * * * /root/sandbox/bitfarms/code/transfer_data.sh
+
+### END OF BITFARMS
+
+## remove old auth_token_cache
+00 6 * * * rm -fr /trading/utils/auth_token_cache.json
+
+## contract roll reminder 
+## check if we are in March - to include/roll to Jun, etc...
+00 9 * * 1-5 /trading/utils/contract_reminder.py
+
+## fetch historical data from yahoo.com
+00 8 * * 1-5 /trading/utils/notify.sh "/trading/utils/fetch_data.sh /trading/utils/fetch_list.txt"
+
+## fetch from IBRK
+##00 8 * * 1-5 /trading/utils/notify.sh "hub=false" "python3 /trading/utils/ibrk_daily_data.py --file=/trading/utils/fetch_ibrk_list.txt"
+
+## email signal table for lex
+#15 8 * * 1-5 /trading/utils/notify.sh "python3 /trading/utils/lex_monitor.py UPRO"
+15 8 * * 1-5 /trading/utils/notify.sh "hub=false" "python3 /trading/utils/lex_monitor2.py --sec_list=UPRO,SPY,ES1"
+
+## kill and restart trading monitor - email alerts
+## kill the old trading_alert monitor
+55 8 * * * pkill -f trading_alert.py
+## start the new log_alert monitor for the next 24hrs...
+00 9 * * * /trading/utils/notify.sh "python3 /trading/utils/trading_alert.py --config=/trading/utils/trading_alert.json"
+
+## kill and restart docker container monitor - email alerts
+## kill old docker container monitor
+25 6 * * * pkill -f docker_alert.py
+## start new docker container monitor
+30 6 * * *  /trading/utils/notify.sh "python3 /trading/utils/docker_alert.py --config=/trading/utils/docker_alert.json"
+
+## THE EXTRA SECURITY-BLANKET PROCESS MONITOR! :)
+## kill and restart process monitor - email alerts
+## kill old process monitor
+25 6 * * * pkill -f process_alert.py
+## start new process monitor
+30 6 * * *  /trading/utils/notify.sh "python3 /trading/utils/process_alert.py --config=/trading/utils/process_alert.json"
+
+## kill and restart log monitor - email alerts
+## kill the old log_alert monitor
+55 7 * * * pkill -f log_alert.py
+## start the new log_alert monitor for the next 24hrs...
+00 8 * * * /trading/utils/notify.sh "python3 /trading/utils/log_alert.py --config=/trading/utils/log_alert.json"
+
+## kill the old logviewer
+55 7 * * * pkill -f log-viewer
+## start the new logviewer for the new 24hrs...
+## viewer on http://96.126.109.155:8111
+00 8 * * * /trading/utils/log-viewer/logviewer.sh
+
+## test log monitor
+## double checking the notify script
+## and the dummy log starts internally at 830
+#15 8 * * 1-5 /trading/utils/notify.sh "python3 /trading/utils/log_echo_test.py"
+
+## MySQL on port 3306
+50 6 * * 1-5 docker run --rm --name mysql_db -v /trading/db:/var/lib/mysql -p 3306:3306 --network tradenet mysql
+30 17 * * 1-5 docker stop mysql_db
+
+## start MySQL web client http://96.126.109.155:8080
+00 7 * * 1-5 docker run --rm --name mysql_client -p 8080:80 --link mysql_db:db --network tradenet phpmyadmin/phpmyadmin
+30 17 * * 1-5 docker stop mysql_client 
+
+## 2FA authentication code server
+## captures Security Code sent to your phone and forwarded (via a SMS forwarding app) to this server.
+## endpoint to POST to the server is http://97.107.130.78:5051/sms/incoming
+#55 6 * * 1-5 /trading/utils/notify.sh "python3 /trading/utils/ibrk_auth_server.py"
+#30 17 * * 1-5 pkill -f ibrk_auth_server.py
+
+## IB Gateway on https://96.126.109.155:5000
+#00 7 * * 1-5 docker run --rm --name ibeam --env-file /root/ibeam_files/env.list --network tradenet -p 5000:5000 -v /root/ibeam_files/inputs_directory/:/srv/inputs -v /root/ibeam_files/outputs:/srv/outputs:rw voyz/ibeam:0.5.8
+#30 17 * * 1-5 docker stop ibeam 
+
+## run account managment progam before start of trading AND report at end of day 
+30 7 * * 1-5 /trading/utils/notify.sh "hub=false" "python3 /trading/utils/ace.py --alloc=/trading/utils/ace_config.json"
+00 17 * * 1-5 /trading/utils/notify.sh "hub=false" "python3 /trading/utils/ace.py --report"
+
+## spinning up IBRK proxy hub
+## note connection setup credentials exist in /trading/util/credential.json
+00 9 * * 1-5 /trading/utils/notify.sh "hub=true" "python3 /trading/lib/hub_server.py" 
+30 16 * * 1-5 pkill -f hub_server.py
+
+15 9 * * 1-5 /trading/utils/notify.sh "hub=true" "python3 /trading/strats/pacman/pacman.py --config=/trading/strats/pacman/pacman_config.json" 
+30 16 * * 1-5 pkill -f pacman.py
+
+15 9 * * 1-5 /trading/utils/notify.sh "hub=true" "python3 /trading/strats/lex/lex.py --strategy_id=lex --config=/trading/strats/lex/lex_config.json" 
+30 16 * * 1-5 pkill -f lex.py
+
+15 9 * * 1-5 /trading/utils/notify.sh "hub=true" "python3 /trading/strats/basic_ema/basic_ema.py --strategy_id=basic_ema --config=/trading/strats/basic_ema/basic_ema_config.json" 
+30 16 * * 1-5 pkill -f basic_ema.py
+
+## archive new changes to cron jobs 
+00 19 * * 1-5 /trading/utils/crontab_monitor.sh
+
+## archive all directories every Friday night 
+00 19 * * 5 /trading/utils/weekly_archive.sh
+
+## end of the month cleanup- deletes  /portfolio/ files lingering after 90 days... 
+## this runs every night but only fires on the last day of the month (handled in the script)
+30 19 * * * /trading/utils/delete_old_files.sh /portfolio /archives /root/ibeam_files/outputs /trading/misc/crontabs
+

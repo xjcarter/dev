@@ -1,0 +1,102 @@
+{
+  "AAPL": {
+    "contract_id": 265598,
+    "name": "undefined",
+    "sectype": "STOCK"
+  },
+  "SPY": {
+    "contract_id": 756733,
+    "name": "undefined",
+    "sectype": "STOCK"
+  },
+  "TSLA": {
+    "contract_id": 76792991,
+    "name": "undefined",
+    "sectype": "STOCK"
+  },
+  "UPRO": {
+    "contract_id": 61228752,
+    "name": "undefined",
+    "sectype": "STOCK"
+  },
+  "VXX": {
+    "contract_id": 617702825,
+    "name": "undefined",
+    "sectype": "STOCK"
+  },
+  "WM": {
+    "contract_id": 13379,
+    "name": "undefined",
+    "sectype": "STOCK"
+  },
+  "ESM5": {
+    "contract_id": 620731015,
+    "name": "ES Jun Future",
+    "sectype": "FUTURE"
+  },
+  "ESU5": {
+    "contract_id": 637533641,
+    "name": "ES Sep Future",
+    "sectype": "FUTURE"
+  },
+  "NQM5": {
+    "contract_id": 672387474,
+    "name": "Masdaq 100 Future",
+    "sectype": "FUTURE"
+  },
+  "NQU5": {
+    "contract_id": 691171690,
+    "name": "Masdaq 100 Future",
+    "sectype": "FUTURE"
+  },
+  "MESM5": {
+    "contract_id": 691171673,
+    "name": "ES Micro Jun Future",
+    "sectype": "FUTURE"
+  },
+  "MESU5": {
+    "contract_id": 711280067,
+    "name": "ES Micro Sep Future",
+    "sectype": "FUTURE"
+  },
+  "MNQM5": {
+    "contract_id": 691171685,
+    "name": "undefined",
+    "sectype": "FUTURE"
+  },
+  "MNQU5": {
+    "contract_id": 711280073,
+    "name": "Micro Masdaq 100",
+    "sectype": "FUTURE"
+  },
+  "M2KM5": {
+    "contract_id": 691171670,
+    "name": "Micro Russell 2000",
+    "sectype": "FUTURE"
+  },
+  "RTYU5": {
+    "contract_id": 711280107,
+    "name": "Russell 2000 Index Future",
+    "sectype": "FUTURE"
+  },
+  "M2KU5": {
+    "contract_id": 711280062,
+    "name": "Micro Russell 2000",
+    "sectype": "FUTURE"
+  },
+  "MNTPXM5": {
+    "contract_id": 728463478,
+    "name": "Jun MNT",
+    "sectype": "FUTURE"
+  },
+  "MHIM5": {
+    "contract_id": 738710372,
+    "name": "Jun MHI",
+    "sectype": "FUTURE"
+  },
+  "HSIM5": {
+    "contract_id": 600640947,
+    "name": "Jun HSI",
+    "sectype": "FUTURE"
+  }
+}

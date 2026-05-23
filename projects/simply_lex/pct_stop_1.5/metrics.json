@@ -1,0 +1,16 @@
+{
+    "Sharpe": 0.2332,
+    "CAGR": 0.0379,
+    "MaxDD": -0.317,
+    "AvgDD": -0.1518,
+    "Trades": 428,
+    "WinPct": 0.6963,
+    "PFactor": 1.1793,
+    "AvgWin": 0.0185,
+    "StdWin": 0.0184,
+    "AvgLoss": -0.036,
+    "StdLoss": 0.0206,
+    "LossCount": 130,
+    "Years": 16.5278,
+    "TotalRtn": 0.849
+}

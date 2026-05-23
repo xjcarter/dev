@@ -1,0 +1,7 @@
+MYSQL_ROOT_PASSWORD=Eleph@ntTusk123$
+PORTFOLIO_DIRECTORY='/portfolio'
+DATA_DIR='/trading/data/'
+PYTHONPATH=.:/trading/lib:/trading/utils
+ADMIN_MAIL='jcarter@hannibalinvestments.com'
+IB_WEB_HOST=localhost
+IB_ACCOUNT=F14529654

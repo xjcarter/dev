@@ -1,0 +1,22 @@
+# Use the official Python image as the base image
+FROM python:3
+
+USER root
+
+RUN mkdir -p /test_sql
+
+# Set the working directory inside the container
+WORKDIR /test_sql
+
+# Install the MySQL client library
+RUN apt-get update && apt-get install -y default-mysql-client
+
+# install mysql python module 
+RUN pip install mysql-connector-python
+
+# Copy your application code into the container
+COPY test_sql_in_container.py /test_sql
+
+# Run your Python application
+# CMD [ "python", "app.py" ]
+
