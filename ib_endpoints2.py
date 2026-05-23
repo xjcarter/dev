@@ -1507,6 +1507,77 @@ def fetch_contract_details(conid):
 
     """
 
+## takes a symbol and security type and returns
+## a dictionary of all conids across exchanges on with that conid trades
+def sec_def_search(symbol, sec_type):
+    """
+    POST payload:
+    {
+        "symbol": "string",
+        "name": true,    <-- lookup by company name, false= use symbol
+        "secType": "string"
+    }
+
+    FOR FUTURES: Use the symbol root. i.e.  ES, MES
+
+    The secType catalog:
+    "STK"
+    "CFD"
+    "OPT"
+    "FOP"
+    "WAR"
+    "IOPT"
+    "FUT"
+    "CASH"
+    "IND"
+    "BOND"
+    "FUND"
+    "CMDTY"
+    "PHYSS"
+    "CRYPTO"
+    """
+
+    base_url = get_base_url() 
+    endpoint = 'iserver/secdef/search'
+    lookup = { 'symbol':symbol, 'secType':sec_type, 'name':False }
+
+    logger.debug(f'url={base_url+endpoint}, json={lookup}')
+
+    def_req = send_ib_post(url=base_url+endpoint, verify=False, json=lookup)
+    _check_fail(def_req, f'symbol conid lookup error: symbol={symbol}, sec_type={sec_type}')
+    sec_def_json = json.dumps(def_req.json(), ensure_ascii=False, indent=4)
+
+    logger.debug(sec_def_json)
+
+    return def_req.json()
+
+
+def fetch_futures_detail(underlying_conid, sec_type, month, exchange):
+    """Fetch futures contract details using specific parameters"""
+
+    base_url = get_base_url()
+    endpoint = "/iserver/secdef/info"
+
+    details = {
+        'conid': underlying_conid,
+        'sectype': sec_type,
+        'month': month,
+        'exchange': exchange
+    }
+    params = "&".join( [f'{k}={v}' for k,v in details.items() ] )
+    
+    url = "".join([base_url, endpoint, "?", params])
+
+    logger.debug(f'url= {url}')
+
+    contract_req = make_ib_request(url=url, verify=False)
+    _check_fail(contract_req, 'contract lookup error')
+    contract_json = json.dumps(contract_req.json(), ensure_ascii=False, indent=4)
+
+    logger.debug(contract_json)
+
+    return contract_req.json()
+
 
 ## takes a list of symbols and returns contract ids specific to exchange
 def fetch_contract_info(symbols_list, sec_type='stocks'):
