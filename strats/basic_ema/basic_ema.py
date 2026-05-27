@@ -145,7 +145,7 @@ class BasicStrategy(Strategy):
     def calc_entry_targets(self, alloc_node, prices_dict):
 
         ## based on the dict of prices and the cash alloc given (for this account)
-        ## calc risk exposure for every name in the universe
+        ## calc risk exposure for every name in the univers
         #  ## stp_price drives both limit and stop orders
         ## don't calc new targets if orders are open
 
@@ -155,6 +155,11 @@ class BasicStrategy(Strategy):
             return []
 
         cash_alloc = alloc_node.cash
+        
+        # this the actual capital in the market
+        # derive functions to change weighting (Kelly, VolWeighting, etc.)
+        risk_alloc = cash_alloc
+
 
         targets = []
         for symbol, bid_ask in prices_dict.items():
@@ -167,6 +172,8 @@ class BasicStrategy(Strategy):
                 ## define the type of order you want to execute with
                 ## target amount
                 tgt = { 'symbol': symbol,
+                        'total_capital': cash_alloc,
+                        'risk_capital': risk_alloc,
                         'target_amt': target_amt,
                         'order_type': OrderType.MKT,
                         'stop_price': None,

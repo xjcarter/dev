@@ -163,6 +163,10 @@ class Lex(Strategy):
             return []
 
         cash_alloc = alloc_node.cash
+
+        # this the actual capital in the market
+        # derive functions to change weighting (Kelly, VolWeighting, etc.)
+        risk_alloc = cash_alloc
        
 
         targets = []
@@ -185,6 +189,8 @@ class Lex(Strategy):
                 ## define the type of order you want to execute with
                 ## target amount
                 tgt = { 'symbol': symbol,
+                        'total_capital': cash_alloc,
+                        'risk_capital': risk_alloc,
                         'target_amt': target_amt,
                         'order_type': OrderType.MKT,
                         'stop_price': None,
