@@ -1269,7 +1269,7 @@ class PosMgr():
 
 
     ## update cash available based on intraday trades
-    def update_cash(acct_id, realized_pnl):
+    def update_cash(self, acct_id, realized_pnl):
         for alloc in self.allocations:
             if alloc.account_id == acct_id:
                 alloc.cash += realized_pnl
