@@ -234,6 +234,9 @@ class Order():
         self.status = None
         self.fa_group = None
 
+        self.total_capital = 0
+        self.risk_capital = 0
+
     def to_dict(self):
         m = dict()
         for k, v in self.__dict__.items():
@@ -484,6 +487,29 @@ class PosMgr():
             logger.error(f'incorrect date_string format for file: {filename}')
             return False
 
+    def intraday_adjust(self, alloc_nodes, total_allocation):
+        ## add in current intraday pnl upon recovery
+
+        ## Directory where the files are located
+        directory = f'{PORTFOLIO_DIRECTORY}/{self.strategy_id}/trades'
+
+        today = datetime.today().strftime("%Y%m%d")
+        todays_pnl_file = f'{self.strategy_id}.pnl.{today}.csv'
+
+        filepath = f'{directory}/{todays_pnl_file}'
+        if os.path.exists(filepath):
+            df = pandas.read_csv(filepath)   
+            ## grab intraday realized pnl by account
+            gg = df.groupby('account_id')['realized_pnl'].sum().reset_index()
+            intraday_pnl = dict(zip(gg['account_id'], gg['realized_pnl']))
+            for alloc_node in alloc_nodes:
+                realized_pnl = intraday_pnl.get(alloc_node.account_id,0)
+                alloc_node.cash += realized_pnl 
+                total_allocation += realized_pnl
+
+        return alloc_nodes, total_allocation
+
+
     ## read position node file:
     ## position filename format = <Strategy_id>.positions.<YYYYMMDD>.json
     def read_positions_and_allocations(self):
@@ -534,9 +560,11 @@ class PosMgr():
 
                 alloc_nodes = pos_json.get('allocations', [])
                 total_allocation = pos_json.get('total_allocation',0)
-
         else:
             logger.warning(f'no matching position files found in {directory} for strategy_id: {self.strategy_id}.')
+
+        ## adjust for intraday pnl activity (recovery)
+        alloc_nodes, total_allocation = self.intraday_adjust(alloc_nodes, total_allocation)
 
         return pos_map, alloc_nodes, total_allocation
 
@@ -908,6 +936,10 @@ class PosMgr():
         order.stop_price = order_info.get('stop_price')
         order.limit_price = order_info.get('limit_price')
         order.fa_group = order_info.get('fa_group')
+
+        order.total_capital = order_info.get('total_capital',0)
+        order.risk_capital = order_info.get('risk_capital',0)
+
         order.stamp_with_time()
 
         self.order_ledger[ order_id ] = order
@@ -1236,6 +1268,13 @@ class PosMgr():
         return fill_map, realized_amts_map
 
 
+    ## update cash available based on intraday trades
+    def update_cash(acct_id, realized_pnl):
+        for alloc in self.allocations:
+            if alloc.account_id == acct_id:
+                alloc.cash += realized_pnl
+                self.total_allocation += realized_pnl
+
     ## takes the new position and distributes it across
     ## all account allocations (AllocNode.positions) 
     ## also records pnl events triggered by position changes
@@ -1279,6 +1318,8 @@ class PosMgr():
             ## create individual pnl lines per account
             realized_pnl = [ delta * x for x in realized_positions ]
             for acct_id, rpnl in zip(account_ids, realized_pnl):
+                ## update tradeable capital by realized pnl
+                self.update_cash(acct_id, rpnl)
                 values = [timestamp, acct_id, trade_id, symbol, rpnl, 0]
                 ## add indv account pnls per symbol
                 indv_pnl = dict(zip(cols,values))
