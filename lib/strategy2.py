@@ -507,6 +507,9 @@ class Strategy():
         for symbol, target_dict in target_map.items():
             order_info = self.generate_order(symbol, target_dict, order_notes)
             if order_info:
+                ## annotate capital details
+                order_info['risk_capital'] = target_dict.get('risk_capital',0)
+                order_info['total_capital'] = target_dict.get('total_capital',0)
                 self.pos_mgr.register_order(order_info)
 
 
