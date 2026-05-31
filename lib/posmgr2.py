@@ -220,6 +220,7 @@ class __PosNode():
 class Order():
     def __init__(self):
         self.order_id = None
+        self.entry = None
         self.symbol = None
         self.side = None 
         self.order_type = None 
@@ -503,8 +504,8 @@ class PosMgr():
             gg = df.groupby('account_id')['realized_pnl'].sum().reset_index()
             intraday_pnl = dict(zip(gg['account_id'], gg['realized_pnl']))
             for alloc_node in alloc_nodes:
-                realized_pnl = intraday_pnl.get(alloc_node.account_id,0)
-                alloc_node.cash += realized_pnl 
+                realized_pnl = intraday_pnl.get(alloc_node['account_id'],0)
+                alloc_node['cash'] += realized_pnl 
                 total_allocation += realized_pnl
 
         return alloc_nodes, total_allocation

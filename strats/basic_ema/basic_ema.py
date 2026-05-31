@@ -322,7 +322,18 @@ class BasicStrategy(Strategy):
         
         logger.info('starting trading loop.')
 
+
+
         while True:
+
+            ## close short positions and reset
+            position_node = self.get_position(self.symbol)
+            current_pos = position_node.position
+            if current_pos is not None and current_pos < 0:
+                logger.critical(f'Reset Exit- Short position: {self.symbol} {current_pos}')
+                _target_map = self.get_targets( self.calc_exit_targets )
+                self.send_orders( _target_map, order_notes='Reset Exit')
+
 
             ## capturing 1 min price snapshots
             ## and building 10min bars + indicators in bar_repo
@@ -338,6 +349,7 @@ class BasicStrategy(Strategy):
                 if new_bar:
                     if self.check_entry(bar_repo):
                         _target_map = self.get_targets( self.calc_entry_targets )
+                        logger.critical(json.dumps(_target_map, indent=4))
                         self.send_orders( _target_map, order_notes='EMA Entry')
                     elif self.check_exit(bar_repo):
                         _target_map = self.get_targets( self.calc_exit_targets )

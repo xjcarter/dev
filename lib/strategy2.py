@@ -332,6 +332,8 @@ class Strategy():
         allocations = self.pos_mgr.get_allocations()
         per_account = defaultdict(list)
         target_totals = {}
+        risk_capital = {}
+        total_capital = {} 
         order_defs = {}
         msg = ''
 
@@ -355,6 +357,8 @@ class Strategy():
                 ## target example 
                 ## tgt = {'symbol': symbol,
                 ##        'target_amt': target_amt,
+                ##        'total_capital': cash_alloc,
+                ##        'risk_capital': risk_alloc,
                 ##        'order_type': OrderType,MKT,
                 ##        'stop_price': None,
                 ##        'limit_price': None
@@ -372,6 +376,11 @@ class Strategy():
                     ## assign target to account allocation
                     alloc.targets[symbol] = target_qty
                     target_totals[symbol] = target_qty + target_totals.get(symbol,0)
+
+                    ## account risk capital, and total capital
+                    ## for monitoring true trade return
+                    risk_capital[symbol] = target.get('risk_capital', 0) + risk_capital.get(symbol,0)
+                    total_capital[symbol] = target.get('total_capital', 0) + total_capital.get(symbol,0)
 
                     ## order type will be FOREVER consistent for a specific name across all accounts
                     ## just copying the tgt to order defs - we ignore symbol and target_amt items
@@ -401,6 +410,9 @@ class Strategy():
             targets[symbol] = dict(contract_id=self.security_master[symbol], target=tot_target, order_def=order_defs[symbol]) 
             ## include detail that makes up the aggregate
             targets[symbol].update( dict(per_account=per_account[symbol]) ) 
+            ## include total capital and capital at risk for return calculations
+            targets[symbol].update( dict(risk_capital=risk_capital[symbol], total_capital=total_capital[symbol]) ) 
+
 
         ## update positions file to include targets
         now = datetime.now()
@@ -507,9 +519,8 @@ class Strategy():
         for symbol, target_dict in target_map.items():
             order_info = self.generate_order(symbol, target_dict, order_notes)
             if order_info:
-                ## annotate capital details
-                order_info['risk_capital'] = target_dict.get('risk_capital',0)
-                order_info['total_capital'] = target_dict.get('total_capital',0)
+                order_info['risk_capital'] = target_dict['risk_capital']
+                order_info['total_capital'] = target_dict['total_capital']
                 self.pos_mgr.register_order(order_info)
 
 
