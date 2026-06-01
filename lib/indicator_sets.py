@@ -1,5 +1,5 @@
 
-from indicators import MA, EMA
+from indicators import MA, EMA, DataSeries
 from dataclasses import dataclass, field
 
 class Test_Indicator_Set:
@@ -71,6 +71,7 @@ class EMA_Indicator_Set:
         ## ema coeff = 2/(n+1)
 		self.ema3 = EMA(0.5, 3)
 		self.ema13 = EMA(0.142857, 13)
+		self.difference = DataSeries(120)
 		self.name = 'ema3-ema13'
 
 	@property
@@ -104,10 +105,28 @@ class EMA_Indicator_Set:
 		ema3_value = self.ema3.push(bar.close)
 		ema13_value = self.ema13.push(bar.close)
 
+		diff = None
+		if all([ema3_value, ema13_value]):
+			diff = ema3_value - ema13_value
+			self.difference.push(diff)
+
+		## provide descriptive stats on the last 120 ema3/ema13 differences
+		stats = self.difference.describe(120)
+		median = mean = std = p25 = p75 = zscore = None
+		if stats is not None:
+			median, mean, std, p25, p75 = stats['50%'], stats['mean'], stats['std'], stats['25%'], stats['75%']
+			zscore = (diff - mean)/std
+
 
 		result = {
 					'ema3': ema3_value,
-					'ema13': ema13_value
+					'ema13': ema13_value,
+					'diff': diff,
+					'median': median,
+					'mean': mean,
+					'p25': p25,
+					'p75': p75,
+					'zscore': zscore
 				}
 
 		## attach new info to the current bar
