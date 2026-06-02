@@ -471,7 +471,7 @@ class BarAggregator:
             logger.critical(f'Cannot load checkpoint- no indicator set given')
             return
 
-        # clear the indicators 
+        # clear the indicators
         self.indicator_set.reset()
         filepath = Path(filepath)
         with filepath.open(newline="") as fh:
@@ -483,7 +483,7 @@ class BarAggregator:
                     NOTE THIS IS ONLY POPULATING INDICATORS
                     TO CARRY CALCULATIONS FORWARD. 
                     this sets the foundation for new indicator
-                    calculations as new bars are created.
+                    calculations as new bars are created
                 """
                 self.annotate(bar)
 
@@ -558,6 +558,11 @@ class BarAggregator:
     # Convenience
     # ------------------------------------------------------------------
     @property
+    def count(self) -> int:
+        """Return a count of presently completed bars."""
+        return len(self._bars)
+
+    @property
     def complete_bars(self) -> List[Bar]:
         """Return a copy of all completed bars (newest first)."""
         return list(self._bars)
@@ -589,7 +594,8 @@ class BarAggregator:
         filepath: Union[str, Path],
         include_incomplete: bool = False,
         chronological: bool = True,
-        history: int = 0
+        history: int = 0,
+        date_filter: Optional[str] = None
     ) -> Path:
         """
         Save the aggregated bar series to a CSV file.
@@ -605,6 +611,9 @@ class BarAggregator:
             If ``True`` (default), rows are written oldest → newest
             (ascending time).  If ``False``, newest → oldest (the same
             order as iteration / indexing).
+        date_filter: Optional[str] = None
+            If this filter is the form "YYYYMMDD" only bars tagged with
+            that date will be save to the file.
  
         Returns
         -------
@@ -630,7 +639,7 @@ class BarAggregator:
         # only save the last 'history' bars
         if history > 0:
             bars = bars[:history]
- 
+
         with filepath.open("w", newline="") as fh:
             writer = csv.writer(fh)
             header = [ 
@@ -650,6 +659,11 @@ class BarAggregator:
                 parts = bar.timestamp.split("-", 1)
                 date_part = parts[0] if len(parts) == 2 else ""
                 time_part = parts[1] if len(parts) == 2 else bar.timestamp
+
+                # only write specific date (in case of BarAggregator history that extends multiple days)
+                if all([date_filter, (date_part != date_filter)]):
+                    continue
+
                 data_row = [
                     bar.timestamp, date_part, time_part,
                     bar.open, bar.high, bar.low, bar.close,
@@ -703,3 +717,4 @@ def get_filtered_filenames(directory: str, symbol: str) -> Iterator[str]:
         
     except FileNotFoundError:
         raise FileNotFoundError(f"Directory not found: {directory}")
+

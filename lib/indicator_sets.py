@@ -76,12 +76,14 @@ class EMA_Indicator_Set:
 
 	@property
 	def history_needed(self):
-		return 13 
+		# 13 days (ema13) + 120 days for stats
+		return 135 
 
 	# reset- create new indicators
 	def reset(self):
 		self.ema3 = EMA(0.5, 3)
 		self.ema13 = EMA(0.142857, 13)
+		self.difference = DataSeries(120)
 
 	## annotate the given bar with updated indicator values
 	def run_indicators(self, bar):
@@ -107,15 +109,24 @@ class EMA_Indicator_Set:
 
 		diff = None
 		if all([ema3_value, ema13_value]):
+			"""Note: you only start collecting data for differences after 13 days.
+			   Therefore when carrying over data for the next day - 
+			   stats below only start calculating AFTER having 120 days of history
+			   There for history_needed is > 120 + 13
+			"""
 			diff = ema3_value - ema13_value
 			self.difference.push(diff)
 
-		## provide descriptive stats on the last 120 ema3/ema13 differences
+
+		## provide descriptive stats on the last 120 ema3/ema13 differences (3 days)
 		stats = self.difference.describe(120)
 		median = mean = std = p25 = p75 = zscore = None
 		if stats is not None:
 			median, mean, std, p25, p75 = stats['50%'], stats['mean'], stats['std'], stats['25%'], stats['75%']
-			zscore = (diff - mean)/std
+			try:
+				zscore = (diff - mean) / std
+			except (ZeroDivisionError, TypeError, ValueError) as e:
+				zscore = 0
 
 
 		result = {
@@ -124,6 +135,7 @@ class EMA_Indicator_Set:
 					'diff': diff,
 					'median': median,
 					'mean': mean,
+					'std': std,
 					'p25': p25,
 					'p75': p75,
 					'zscore': zscore

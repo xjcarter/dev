@@ -154,14 +154,11 @@ class DataSeries(Indicator):
     def _calculate(self):
         self.derived.append(self.history[-1])
 
-    def highest(self, count):
+    def describe(self, count):
         if len(self.derived) >= count:
-            return max(list(self.derived)[-count:])
-        return None
+            series = pandas.Series(list(self.derived)[-count:])
+            return series.describe()
 
-    def lowest(self, count):
-        if len(self.derived) >= count:
-            return min(list(self.derived)[-count:])
         return None
 
 class Runner(Indicator):
