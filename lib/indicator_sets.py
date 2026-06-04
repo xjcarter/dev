@@ -76,7 +76,12 @@ class EMA_Indicator_Set:
 
 	@property
 	def history_needed(self):
-		# 13 days (ema13) + 120 days for stats
+		"""Note: you only start collecting data for differences after 13 days.
+		   Therefore when carrying over data for the next day - 
+		   stats below only start calculating AFTER having 120 days of history
+		   since all ema3 are reset at the start of each day
+		   Therefore: history_needed is > 120 + 13
+		"""
 		return 135 
 
 	# reset- create new indicators
@@ -109,12 +114,11 @@ class EMA_Indicator_Set:
 
 		diff = None
 		if all([ema3_value, ema13_value]):
-			"""Note: you only start collecting data for differences after 13 days.
-			   Therefore when carrying over data for the next day - 
-			   stats below only start calculating AFTER having 120 days of history
-			   There for history_needed is > 120 + 13
-			"""
-			diff = ema3_value - ema13_value
+			try:
+				diff = (ema3_value - ema13_value)/bar.close
+			except (ZeroDivisionError, TypeError, ValueError) as e:
+				diff = 0
+
 			self.difference.push(diff)
 
 
