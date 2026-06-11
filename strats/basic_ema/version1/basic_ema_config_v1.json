@@ -7,7 +7,7 @@
                 "label":"intraday price fetch"
         },
         "at_close": {
-                "trigger_start":"15:57",
+                "trigger_start":"15:55",
                 "label":"conditional sell order at close"
         },
         "at_eod": {
