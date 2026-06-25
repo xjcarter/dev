@@ -4,6 +4,7 @@
         "at_open": {
                 "trigger_start":"9:30",
                 "trigger_end": "10:01",
+                "reset_interval": 60,
                 "label":"incremental buy during first 30mins"
         },
         "at_close": {

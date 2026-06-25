@@ -1,5 +1,6 @@
 from datetime import datetime
 import os, sys, json
+import traceback
 import logging
 import time
 import argparse
@@ -43,6 +44,25 @@ logging.basicConfig(
 ## all messages at INFO level and above will be captured
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+## handler for logging all uncaught errors
+def log_unhandled_exception(exc_type, exc_value, exc_traceback):
+    """Centralized exception logging"""
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    # Get the full stack trace
+    stack_trace = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+
+    # Log with detailed information
+    logger.critical(f"🚨 PROGRAM CRASHED 🚨\n"
+                   f"Exception Type: {exc_type.__name__}\n"
+                   f"Exception Value: {exc_value}\n"
+                   f"Full Stack Trace:\n{stack_trace}")
+
+# Install the cover-all exception hook
+sys.excepthook = log_unhandled_exception
 
 ## Latent Execution Model (LEX) 
 class Lex(Strategy):
@@ -444,7 +464,7 @@ class Lex(Strategy):
             time.sleep(3)
 
 
-if __name__ == "__main__":
+def main():
     parser =  argparse.ArgumentParser()
     parser.add_argument("--config", help="configuration file", required=True)
     parser.add_argument("--strategy_id", help="strategy id", required=True)
@@ -463,4 +483,8 @@ if __name__ == "__main__":
     else:
         today_str = today.strftime("%Y-%m-%d")
         logger.critical(f'Today:{today_str} is a holiday. Strategy:{u.strategy_id} disabled.')
+
+
+if __name__ == "__main__":
+    main()
 
