@@ -199,7 +199,6 @@ class Lex(Strategy):
                 ## falling market will add more. nice.
 
                 target_amt = int(cash_alloc/(ask + abs(ask-bid)) )
-                self.entry_counter += 1
                 
                 ## leg into trade
                 ## incrementaly increasing the target at each leg of entry
@@ -417,6 +416,7 @@ class Lex(Strategy):
                     if self.check_entry():
                         _target_map = self.get_targets( self.calc_entry_targets )
                         self.send_orders( _target_map, order_notes=f'Lex Entry({self.entry_counter})')
+                        self.entry_counter += 1
 
                     position_node = self.get_position(self.symbol)
                     current_pos = position_node.position
