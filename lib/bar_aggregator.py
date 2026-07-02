@@ -450,6 +450,7 @@ class BarAggregator:
         flipped = self._bars[::-1]
         return iter(flipped)
 
+
     # ------------------------------------------------------------------
     # load_checkpoint — initial setup of new bar
     # ------------------------------------------------------------------
@@ -485,13 +486,16 @@ class BarAggregator:
                     this sets the foundation for new indicator
                     calculations as new bars are created
                 """
-                self.annotate(bar)
+                new_bar = self.annotate(bar)
+                self._bars.append(new_bar)
+
+        self._bars.reverse()  # reverse order so index 0 = newest
 
     # ------------------------------------------------------------------
     # Create data checkpoint -  collect most recent history to carry forward
     # for continued indicator calculations on the next day.
     # history_needed = number of 'days back' of bar data needed to 
-    # continue poplating any running annotations (indicators, etc)
+    # continue populating any running annotations (indicators, etc)
     # ------------------------------------------------------------------
     def write_checkpoint(self, filepath: Union[str, Path]) -> None:
 
@@ -499,7 +503,12 @@ class BarAggregator:
             logger.critical(f'Cannot write checkpoint- no indicator set given')
             return
 
-        bar_history = list(self._bars[:self.indicator_set.history_needed])
+        needed = self.indicator_set.history_needed
+        bar_history = list(self._bars[:needed])
+        if len(bar_history) < needed:
+            logger.critical(f'checkpoint mismatch! - needed={needed}, history={len(bar_history)}')
+            logger.critical(f'checkpoint write aborted.')
+
         bar_history.reverse()
 
         filepath = Path(filepath)
@@ -557,6 +566,12 @@ class BarAggregator:
     # ------------------------------------------------------------------
     # Convenience
     # ------------------------------------------------------------------
+    @property
+    def checkpoint_size(self):
+        if self.indicator_set is None:
+            return 0
+        return self.indicator_set.history_needed 
+
     @property
     def count(self) -> int:
         """Return a count of presently completed bars."""
