@@ -1,5 +1,6 @@
 from datetime import datetime
 import os, sys, json
+import traceback
 import logging
 import time
 import argparse
@@ -9,9 +10,8 @@ from indicator_sets import EMA_Indicator_Set
 from bar_aggregator import BarAggregator
 import calendar_calcs
 from strategy2 import Strategy
-from posmgr2 import OrderType, OrderStatus
-from clockutils import create_tripwire, unix_time_to_string
-import functools
+from posmgr2 import OrderType
+from clockutils import create_tripwire
 
 def get_time():
     return datetime.today().strftime('%Y%m%d')
@@ -43,6 +43,28 @@ logging.basicConfig(
 ## all messages at INFO level and above will be captured
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+## handler for logging all uncaught errors
+def log_unhandled_exception(exc_type, exc_value, exc_traceback):
+    """Centralized exception logging"""
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+    
+    # Get the full stack trace
+    stack_trace = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+    
+    # Log with detailed information
+    logger.critical(f"🚨 PROGRAM CRASHED 🚨\n"
+                   f"Exception Type: {exc_type.__name__}\n"
+                   f"Exception Value: {exc_value}\n"
+                   f"Full Stack Trace:\n{stack_trace}")
+    
+# Install the cover-all exception hook
+sys.excepthook = log_unhandled_exception
+
+# Last point in time any trading is allowed
+LAST_ALLOWABLE_TRADE_TIME = datetime.now().replace(hour=15, minute=55, second=0, microsecond=0)
 
 ## Basic = Standard Model Setup
 class BasicStrategy(Strategy):
@@ -171,7 +193,8 @@ class BasicStrategy(Strategy):
 
                 ## define the type of order you want to execute with
                 ## target amount
-                tgt = { 'symbol': symbol,
+                tgt = { 'entry': 'ENTRY',
+                        'symbol': symbol,
                         'total_capital': cash_alloc,
                         'risk_capital': risk_alloc,
                         'target_amt': target_amt,
@@ -218,12 +241,18 @@ class BasicStrategy(Strategy):
 
         return targets
 
+    def in_trading_window(self):
+        return datetime.now() <= LAST_ALLOWABLE_TRADE_TIME
 
     def check_entry(self, bar_repo):
         """
         no open position, no open orders
         current bar ma3 > ma13 -> BUY
         """
+
+        if not self.in_trading_window():
+            return False
+
         if self.get_open_orders():
             return False
 
@@ -247,6 +276,9 @@ class BasicStrategy(Strategy):
         current bar ma3 < ma13 -> SELL 
         """
 
+        if not self.in_trading_window():
+            return False
+
         if self.get_open_orders():
             return False
 
@@ -263,7 +295,33 @@ class BasicStrategy(Strategy):
 
 
     def exit_on_close(self):
-        ## no exit on close
+        ## exit if profitable 
+
+        if self.get_open_orders():
+            return False
+
+        pos_node = self.get_position(self.symbol)
+
+        current_pos = pos_node.position
+        entry_price = pos_node.price
+
+        if current_pos == 0:
+            return False
+
+        current_price = None
+        for i in range(10):
+            current_price, _ask, _bidsz, _asksz = self.get_bid_ask( self.symbol, raise_error=True )
+            if current_price: break
+            time.sleep(0.5)
+
+        if not current_price: 
+            logger.critical('couldnt get prices to evaluate exit')   
+            return False 
+
+        if current_price > entry_price:
+           logger.critical(f'PNL Exit -> current: {current_price} > entry_price: {entry_price}') 
+           return True  
+
         return False
 
 
@@ -316,7 +374,7 @@ class BasicStrategy(Strategy):
         ## grab checkpoint to continue indicator calculations
         try:
             bar_repo.load_checkpoint(checkpoint_file)
-            logger.info(f'checkpoint: {checkpoint_file} loaded.')
+            logger.info(f'checkpoint: {checkpoint_file} loaded. size={len(bar_repo)}')
         except:
             logger.info(f'no checkpoint_file loaded.')
         
@@ -386,9 +444,9 @@ class BasicStrategy(Strategy):
 
                     self.create_directory(f'{PORTFOLIO_DIRECTORY}/{STRATEGY}/data/ema_set')
                     analytics_file = f'{PORTFOLIO_DIRECTORY}/{STRATEGY}/data/ema_set/{self.symbol}.{today}.csv'
-                    logger.info(f'saving intraday analytics: {analytics_file}')
-                    bar_repo.save(analytics_file)
-                    logger.info(f'saving checkpoint: {checkpoint_file}')
+                    logger.info(f'saving intraday analytics: {analytics_file}, len={len(bar_repo)}')
+                    bar_repo.save(analytics_file, date_filter=today)
+                    logger.info(f'saving checkpoint: {checkpoint_file}, len={len(bar_repo)}, required={bar_repo.checkpoint_size}')
                     bar_repo.write_checkpoint(checkpoint_file)
 
                     self.close_trading_book()
@@ -399,7 +457,7 @@ class BasicStrategy(Strategy):
             time.sleep(3)
 
 
-if __name__ == "__main__":
+def main():
     parser =  argparse.ArgumentParser()
     parser.add_argument("--config", help="configuration file", required=True)
     parser.add_argument("--strategy_id", help="strategy id", required=True)
@@ -419,3 +477,6 @@ if __name__ == "__main__":
         today_str = today.strftime("%Y-%m-%d")
         logger.critical(f'Today:{today_str} is a holiday. Strategy:{u.strategy_id} disabled.')
 
+
+if __name__ == "__main__":
+    main()

@@ -4,7 +4,8 @@ from pathlib import Path
 
 ## at least a half day's worth of data (1 minute snapshots)
 DATA_THRESHOLD = (60 * 6.5)/2
-DATA_DIR = '/portfolio/pacman/data/'
+#DATA_DIR = '/portfolio/pacman/data/'
+DATA_DIR = '/portfolio/basic_ema/data/'
 OUTPUT_DIR = '/portfolio/basic_ema/data/backfill_ema_set/'
 
 def count_lines(filename):
