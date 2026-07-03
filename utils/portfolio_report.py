@@ -31,7 +31,13 @@ Report structure (two separate passes over the children, per spec):
            current "*pnl*" (CSV), "*orders*" (JSON), and "*trades*" (JSON)
            files, parses each, and renders their tables the same way.
 
-"Most current" is determined by file modification time.
+By default, "most current" is determined by file modification time. Pass
+--date to instead pin the report to a specific date embedded in each
+file's name (e.g. --date 20260702 selects only files whose name contains
+"20260702" -- logs, positions, pnl, orders, and trades files alike --
+rather than picking the most recently modified file). If more than one
+file happens to match the date, the most recently modified of those
+matches is used as a tie-break.
 
 Architecture note:
     Each process_*_file() function is a pure parser: file on disk in,
@@ -42,7 +48,7 @@ Architecture note:
     requested.
 
 Usage:
-    python3 portfolio_report.py [--root /portfolio] [--tail-lines 50] [--output-dir .]
+    python3 portfolio_report.py [--root /portfolio] [--tail-lines 50] [--output-dir .] [--date 20260702]
 """
 
 from __future__ import annotations
@@ -52,6 +58,7 @@ import csv
 import html
 import json
 import os
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -81,14 +88,27 @@ def get_immediate_child_dirs(path: Path) -> List[Path]:
     )
 
 
-def find_most_recent_file(directory: Path, name_contains: Optional[str] = None) -> Optional[Path]:
+def find_target_file(
+    directory: Path,
+    name_contains: Optional[str] = None,
+    date_filter: Optional[str] = None,
+) -> Optional[Path]:
     """
-    Return the most recently modified *file* directly inside `directory`
-    (non-recursive).
+    Return the *file* directly inside `directory` (non-recursive) that the
+    report should use.
 
     If `name_contains` is given, only files whose name contains that
     substring (case-insensitive) are considered. This is how the
     "*positions*" / "*pnl*" / "*orders*" / "*trades*" matching is done.
+
+    If `date_filter` is given, only files whose name contains that literal
+    date string (e.g. "20260702") are considered -- this pins the report
+    to one date instead of picking the most recently modified file.
+
+    Among whatever survives both filters, the most recently modified file
+    is returned (with no date_filter, that's simply "the most current
+    file"; with a date_filter, it's a tie-break in the rare case more than
+    one file matches that date).
     """
     if not directory.is_dir():
         return None
@@ -97,6 +117,8 @@ def find_most_recent_file(directory: Path, name_contains: Optional[str] = None) 
     if name_contains:
         needle = name_contains.lower()
         candidates = [p for p in candidates if needle in p.name.lower()]
+    if date_filter:
+        candidates = [p for p in candidates if date_filter in p.name]
 
     if not candidates:
         return None
@@ -421,9 +443,16 @@ class ReportBuilder:
 # Report sections
 # --------------------------------------------------------------------------
 
-def report_logs(rb: ReportBuilder, children: List[Path], tail_lines: int) -> None:
+def report_logs(
+    rb: ReportBuilder,
+    children: List[Path],
+    tail_lines: int,
+    date_filter: Optional[str] = None,
+) -> None:
     """Section 1: for every immediate child of root, report on the
-    child's "logs" directory (if any)."""
+    child's "logs" directory (if any). If `date_filter` is given, each log
+    source is restricted to the file matching that date instead of its
+    most recently modified file."""
     for child in children:
         rb.child_banner(child.name)
         rb.section_header("LOGS")
@@ -439,24 +468,42 @@ def report_logs(rb: ReportBuilder, children: List[Path], tail_lines: int) -> Non
             continue
 
         for source_dir in source_dirs:
-            most_current = find_most_recent_file(source_dir)
-            if most_current is None:
-                continue
-
             label = source_dir.relative_to(logs_dir)
             label_str = str(label) if str(label) != "." else logs_dir.name
 
+            target = find_target_file(source_dir, date_filter=date_filter)
+            if target is None:
+                if date_filter:
+                    rb.plain(f"    Log source: {label_str} -- no file found for date '{date_filter}'")
+                else:
+                    rb.plain(f"    Log source: {label_str} -- no log files found")
+                continue
+
             rb.text(f"    Log source: {label_str}")
-            rb.text(f"    Most current file: {most_current.name}")
+            rb.text(f"    {'Selected' if date_filter else 'Most current'} file: {target.name}")
             rb.raw_block(
-                f"Last {tail_lines} lines of {most_current.name}",
-                tail_file(most_current, tail_lines),
+                f"Last {tail_lines} lines of {target.name}",
+                tail_file(target, tail_lines),
             )
 
 
-def report_positions_and_trading_activity(rb: ReportBuilder, children: List[Path]) -> None:
+def report_positions_and_trading_activity(
+    rb: ReportBuilder,
+    children: List[Path],
+    date_filter: Optional[str] = None,
+) -> None:
     """Section 2: for every immediate child of root, report on the
-    child's "positions" and "trades" directories (if any)."""
+    child's "positions" and "trades" directories (if any). If
+    `date_filter` is given, each of positions/pnl/orders/trades is
+    restricted to the file matching that date instead of its most
+    recently modified file."""
+    selected_label = "Selected" if date_filter else "Most current"
+
+    def not_found_message(pattern: str) -> str:
+        if date_filter:
+            return f"(no '*{pattern}*' file found for date '{date_filter}')"
+        return f"(no '*{pattern}*' file found)"
+
     for child in children:
         rb.child_banner(child.name)
 
@@ -464,13 +511,13 @@ def report_positions_and_trading_activity(rb: ReportBuilder, children: List[Path
         rb.section_header("POSITIONS")
         positions_dir = child / "positions"
         if positions_dir.is_dir():
-            most_current = find_most_recent_file(positions_dir, name_contains="positions")
-            if most_current is not None:
-                rb.text(f"    Most current positions file: {most_current.name}")
-                for t in process_positions_file(most_current):
+            target = find_target_file(positions_dir, name_contains="positions", date_filter=date_filter)
+            if target is not None:
+                rb.text(f"    {selected_label} positions file: {target.name}")
+                for t in process_positions_file(target):
                     rb.table(t)
             else:
-                rb.plain("(no '*positions*' file found)")
+                rb.plain(not_found_message("positions"))
         else:
             rb.plain("(no 'positions' directory found)")
 
@@ -478,29 +525,29 @@ def report_positions_and_trading_activity(rb: ReportBuilder, children: List[Path
         rb.section_header("TRADING ACTIVITY")
         trades_dir = child / "trades"
         if trades_dir.is_dir():
-            most_current_pnl = find_most_recent_file(trades_dir, name_contains="pnl")
-            if most_current_pnl is not None:
-                rb.text(f"    Most current pnl file: {most_current_pnl.name}")
-                for t in process_pnl_file(most_current_pnl):
+            pnl_target = find_target_file(trades_dir, name_contains="pnl", date_filter=date_filter)
+            if pnl_target is not None:
+                rb.text(f"    {selected_label} pnl file: {pnl_target.name}")
+                for t in process_pnl_file(pnl_target):
                     rb.table(t)
             else:
-                rb.plain("(no '*pnl*' file found)")
+                rb.plain(not_found_message("pnl"))
 
-            most_current_orders = find_most_recent_file(trades_dir, name_contains="orders")
-            if most_current_orders is not None:
-                rb.text(f"    Most current orders file: {most_current_orders.name}")
-                for t in process_orders_file(most_current_orders):
+            orders_target = find_target_file(trades_dir, name_contains="orders", date_filter=date_filter)
+            if orders_target is not None:
+                rb.text(f"    {selected_label} orders file: {orders_target.name}")
+                for t in process_orders_file(orders_target):
                     rb.table(t)
             else:
-                rb.plain("(no '*orders*' file found)")
+                rb.plain(not_found_message("orders"))
 
-            most_current_trades = find_most_recent_file(trades_dir, name_contains="trades")
-            if most_current_trades is not None:
-                rb.text(f"    Most current trades file: {most_current_trades.name}")
-                for t in process_trades_file(most_current_trades):
+            trades_target = find_target_file(trades_dir, name_contains="trades", date_filter=date_filter)
+            if trades_target is not None:
+                rb.text(f"    {selected_label} trades file: {trades_target.name}")
+                for t in process_trades_file(trades_target):
                     rb.table(t)
             else:
-                rb.plain("(no '*trades*' file found)")
+                rb.plain(not_found_message("trades"))
         else:
             rb.plain("(no 'trades' directory found)")
 
@@ -532,7 +579,23 @@ def main() -> None:
         action="store_true",
         help="Suppress console echo; still writes the .txt and .html files.",
     )
+    parser.add_argument(
+        "--date",
+        default=None,
+        help=(
+            "Restrict the report to files whose filename contains this date string "
+            "(e.g. --date 20260702), instead of picking the most recently modified "
+            "file. Applies to logs, positions, pnl, orders, and trades files alike."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.date and not re.fullmatch(r"\d{8}", args.date):
+        print(
+            f"Warning: --date '{args.date}' doesn't look like an 8-digit YYYYMMDD "
+            "date. Proceeding anyway -- it will be matched as a literal substring "
+            "against filenames."
+        )
 
     root = Path(args.root)
     if not root.is_dir():
@@ -542,22 +605,27 @@ def main() -> None:
     if not children:
         raise SystemExit(f"No child directories found under: {root}")
 
+    title = f"PORTFOLIO TRADING OPERATIONS REPORT -- root: {root}"
+    if args.date:
+        title += f" -- date: {args.date}"
+
     rb = ReportBuilder(echo_to_console=not args.quiet)
-    rb.title_banner(f"PORTFOLIO TRADING OPERATIONS REPORT -- root: {root}")
+    rb.title_banner(title)
 
     # 1. LOGS -- one full pass over all children
-    report_logs(rb, children, args.tail_lines)
+    report_logs(rb, children, args.tail_lines, date_filter=args.date)
 
     # 2. POSITIONS / TRADING ACTIVITY -- second full pass over all children
-    report_positions_and_trading_activity(rb, children)
+    report_positions_and_trading_activity(rb, children, date_filter=args.date)
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    txt_path = output_dir / "portfolio_report.txt"
-    html_path = output_dir / "portfolio_report.html"
+    suffix = f"_{args.date}" if args.date else ""
+    txt_path = output_dir / f"portfolio_report{suffix}.txt"
+    html_path = output_dir / f"portfolio_report{suffix}.html"
 
     txt_path.write_text("\n".join(rb.text_lines) + "\n")
-    html_path.write_text(rb.finalize_html("Portfolio Trading Operations Report"))
+    html_path.write_text(rb.finalize_html(title))
 
     print()
     print(f"Text report written to:  {txt_path}")
