@@ -3,6 +3,9 @@
 # does an end of the month cleanup of the directories given
 # just add this script to a cronjob that runs at the end of the day
 
+# Default history value (in days)
+HISTORY_DAYS=90
+
 # finds endpoint directories that contain files
 find_directories_with_files() {
     # Check if base directory argument is provided
@@ -18,11 +21,51 @@ find_directories_with_files() {
     find "$base_directory" -type f -exec dirname {} \; | sort -u
 }
 
-
-# Check if directory paths are provided as arguments
-if [ $# -eq 0 ]; then
-    echo "Usage: $0 <directory_path1> <directory_path2> ... <directory_pathN>"
+# Function to display usage
+show_usage() {
+    echo "Usage: $0 [--history=N] <directory_path1> <directory_path2> ... <directory_pathN>"
+    echo ""
+    echo "Options:"
+    echo "  --history=N    Number of days of history to keep (default: 90)"
+    echo "                 Files older than N days will be deleted"
+    echo ""
+    echo "Examples:"
+    echo "  $0 --history=20 /path/to/dir1 /path/to/dir2"
+    echo "  $0 /path/to/dir1 /path/to/dir2         # uses default 90 days"
     exit 1
+}
+
+# Parse command line arguments
+directories=()
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --history=*)
+            HISTORY_DAYS="${1#*=}"
+            # Validate that HISTORY_DAYS is a positive integer
+            if ! [[ "$HISTORY_DAYS" =~ ^[0-9]+$ ]] || [ "$HISTORY_DAYS" -eq 0 ]; then
+                echo "Error: --history requires a positive integer value"
+                show_usage
+            fi
+            shift
+            ;;
+        --help|-h)
+            show_usage
+            ;;
+        -*)
+            echo "Error: Unknown option $1"
+            show_usage
+            ;;
+        *)
+            directories+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# Check if directory paths are provided
+if [ ${#directories[@]} -eq 0 ]; then
+    echo "Error: No directory paths provided"
+    show_usage
 fi
 
 # Get the current day of the month
@@ -33,18 +76,31 @@ last_day=$(date -d "$(date +'%Y-%m-01') +1 month -1 day" +%d)
 
 # Make sure it's the last day of the month
 if [ "$current_day" -eq "$last_day" ]; then
+    # Calculate the mtime/atime threshold (days - 1 because find uses +N for "older than N days")
+    # For example: --history=20 means keep files from the last 20 days, delete files older than 20 days
+    # find's -mtime +19 means files modified 20 or more days ago
+    threshold=$((HISTORY_DAYS - 1))
+    
+    echo "Running cleanup with history set to $HISTORY_DAYS days (deleting files older than $HISTORY_DAYS days)"
+    
     # Iterate over each directory path provided
-    for directory_path in "$@"; do
-       # Check if directory exists
-       if [ ! -d "$directory_path" ]; then
-          echo "Directory '$directory_path' not found."
-          continue
-       fi
-      
-       children=$(find_directories_with_files $directory_path) 
-       for child in $children; do       
-           # Delete files not modified or accessed in the last 90 days
-           find "$child" -type f \( -mtime +89 -o -atime +89 \) -exec rm -f {} \;
-       done
+    for directory_path in "${directories[@]}"; do
+        # Check if directory exists
+        if [ ! -d "$directory_path" ]; then
+            echo "Directory '$directory_path' not found."
+            continue
+        fi
+        
+        echo "Processing directory: $directory_path"
+        
+        children=$(find_directories_with_files "$directory_path") 
+        for child in $children; do
+            echo "  Cleaning: $child"
+            # Delete files not modified or accessed in the last HISTORY_DAYS days
+            find "$child" -type f \( -mtime +$threshold -o -atime +$threshold \) -exec rm -fv {} \;
+        done
     done
+else
+    echo "Not the last day of the month. Skipping cleanup."
+    echo "Current day: $current_day, Last day: $last_day"
 fi
