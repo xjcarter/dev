@@ -34,7 +34,7 @@ def run_backfill(symbol, indicator_set):
 		if agg.count >= indicator_set.history_needed: 
 			agg.write_checkpoint(checkpoint_file)
 		date = filename.split('.')[1]
-		agg.save(f"{OUTPUT_DIR}/{date}.csv", date_filter=date)
+		agg.save(f"{OUTPUT_DIR}/{symbol}.{date}.csv", date_filter=date)
 
 if __name__ == '__main__':
 	run_backfill('UPRO', EMA_Indicator_Set())
