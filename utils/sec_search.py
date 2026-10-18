@@ -49,6 +49,10 @@ $ python3 sec_search.py --conid=11004968 --type=FUT --month=JUN26 --exchange=CME
     }
 ]
 
+Base Conids:
+  ES = 11004968   --  E-Mini
+  MES = 362673777 --  E-Micro
+
 """
 
 import argparse
